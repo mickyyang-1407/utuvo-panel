@@ -1,0 +1,46 @@
+{
+ "fill-specializations": [
+  {
+   "value": {
+    "automatic-gradient": "extended-srgb:0.45,0.30,0.95,1.00"
+   }
+  }
+ ],
+ "groups": [
+  {
+   "layers": [
+    {
+     "glass": true,
+     "image-name": "mark-bolder.svg",
+     "name": "mark",
+     "position": {
+      "scale": 1.2,
+      "translation-in-points": [
+       0,
+       0
+      ]
+     },
+     "fill-specializations": [
+      {
+       "value": {
+        "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+       }
+      }
+     ]
+    }
+   ],
+   "lighting": "individual",
+   "shadow": {
+    "kind": "neutral",
+    "opacity": 0.5
+   },
+   "translucency": {
+    "enabled": true,
+    "value": 0.5
+   }
+  }
+ ],
+ "supported-platforms": {
+  "squares": "shared"
+ }
+}

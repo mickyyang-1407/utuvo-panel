@@ -59,6 +59,7 @@ struct PanelView: View {
         content
             .padding(pad)
             .environment(\.panelAccented, accented)
+            .environment(\.panelFont, data.config.design)
             .modifier(BackgroundModifier(image: data.background, tint: data.config.tint, inWidget: inWidget, accented: accented))
     }
 
@@ -150,29 +151,44 @@ private struct Card<Content: View>: View {
     }
 }
 
-/// Small circular glass button (gear, play, stop).
-private struct GlassCircle<Label: View>: View {
+/// Round glass button rendered by ictool on the circles platform (tools/make-tiles.py → btn-*).
+private struct GlassButton: View {
     @Environment(\.panelAccented) private var accented
+    let name: String      // btn-gear / btn-play / btn-pause / btn-stop
+    let symbol: String    // fallback for Clear/tinted mode
     var size: CGFloat = 40
-    var tint: Color = .clear
-    @ViewBuilder var label: () -> Label
     var body: some View {
-        label()
-            .frame(width: size, height: size)
-            .background {
-                if accented {
-                    Circle().strokeBorder(Color.white.opacity(0.35), lineWidth: 0.6)
-                } else {
-                    Circle().fill(Color.clear)
-                        .glassEffect(.regular.tint(tint), in: Circle())
-                        .overlay(Circle().strokeBorder(Color.white.opacity(0.35), lineWidth: 0.6))
-                }
-            }
+        if accented {
+            Circle().strokeBorder(Color.white.opacity(0.35), lineWidth: 0.6)
+                .overlay { Image(systemName: symbol).font(.system(size: size * 0.38, weight: .bold)).foregroundStyle(.white) }
+                .frame(width: size, height: size)
+        } else {
+            Image(name).resizable().interpolation(.high).widgetAccentedRenderingMode(.fullColor)
+                .frame(width: size, height: size)
+        }
     }
 }
 
-private func f(_ size: CGFloat, _ weight: Font.Weight = .semibold) -> Font {
-    .system(size: size, weight: weight)
+private struct PanelFontKey: EnvironmentKey { static let defaultValue: Font.Design = .rounded }
+extension EnvironmentValues {
+    var panelFont: Font.Design {
+        get { self[PanelFontKey.self] }
+        set { self[PanelFontKey.self] = newValue }
+    }
+}
+extension PanelConfig {
+    var design: Font.Design {
+        switch fontDesign { case "default": return .default; case "serif": return .serif; case "mono": return .monospaced; default: return .rounded }
+    }
+}
+/// Text font in the panel's chosen design. Digits always get the same design so clocks and temps match the labels.
+private struct PanelText: ViewModifier {
+    @Environment(\.panelFont) private var design
+    let size: CGFloat; let weight: Font.Weight
+    func body(content: Content) -> some View { content.font(.system(size: size, weight: weight, design: design)) }
+}
+private extension View {
+    func pf(_ size: CGFloat, _ weight: Font.Weight = .semibold) -> some View { modifier(PanelText(size: size, weight: weight)) }
 }
 
 // MARK: - Rows
@@ -191,24 +207,21 @@ private struct HeaderRow: View {
                         Text(date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
                     }
                 }
-                .font(.system(size: showSeconds ? 44 : 54, weight: .medium, design: .rounded))
+                .pf(showSeconds ? 44 : 54, .medium)
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
                 .widgetAccentable()
                 Text(date, format: .dateTime.weekday(.wide).month(.abbreviated).day())
-                    .font(f(15, .medium))
+                    .pf(15, .medium)
                     .opacity(0.85)
             }
             Spacer()
             // Settings: opens the app (widgets can only open their own container).
             Link(destination: Launcher.settingsDeepLink) {
-                GlassCircle(size: 48, tint: Color.white.opacity(0.08)) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.9))
-                }
+                GlassButton(name: "btn-gear", symbol: "gearshape.fill", size: 48)
             }
+            .accessibilityLabel("Settings")
         }
         .padding(.horizontal, 6)
     }
@@ -225,19 +238,19 @@ private struct CalendarRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     if let event {
                         Text(event.title)
-                            .font(f(15, .semibold))
+                            .pf(15, .semibold)
                             .foregroundStyle(Color(hex: 0x9CCBFF))
                             .widgetAccentable()
                             .lineLimit(1)
                         if event.isAllDay {
-                            Text("全天").font(f(16, .medium))
+                            Text("全天").pf(16, .medium)
                         } else {
                             Text("\(event.start, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())–\(event.end, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())")
-                                .font(f(17, .medium)).monospacedDigit()
+                                .pf(17, .medium).monospacedDigit()
                         }
                     } else {
-                        Text("今天沒有行程").font(f(15, .semibold)).foregroundStyle(Color(hex: 0x9CCBFF)).widgetAccentable()
-                        Text("休息一下").font(f(16, .medium)).opacity(0.8)
+                        Text("今天沒有行程").pf(15, .semibold).foregroundStyle(Color(hex: 0x9CCBFF)).widgetAccentable()
+                        Text("休息一下").pf(16, .medium).opacity(0.8)
                     }
                 }
                 Spacer(minLength: 0)
@@ -258,7 +271,7 @@ private struct DateTile: View {
                 .padding(.vertical, 3)
                 .background(accented ? Color.white.opacity(0.35) : Color(hex: 0xFF3B30))
             Text(date, format: .dateTime.day())
-                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .pf(22, .bold)
                 .foregroundStyle(accented ? .white : .black)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(accented ? Color.white.opacity(0.15) : Color.white)
@@ -277,24 +290,22 @@ private struct WeatherRow: View {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 4) {
                         Image(systemName: "location.fill").font(.system(size: 11))
-                        Text(city ?? "定位中").font(f(14, .semibold))
+                        Text(city ?? "定位中").pf(14, .semibold)
                     }
                     Text(weather.map { "\(Int($0.temperature.rounded()))°" } ?? "--°")
-                        .font(.system(size: 48, weight: .medium, design: .rounded))
+                        .pf(48, .medium)
                         .monospacedDigit()
                         .widgetAccentable()
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     let d: (symbol: String, text: String) = weather?.description ?? (symbol: "cloud.fill", text: "—")
-                    Image(systemName: d.symbol)
-                        .symbolRenderingMode(.multicolor)
-                        .font(.system(size: 24))
-                    Text(d.text).font(f(15, .semibold))
+                    Tile(name: WeatherSnapshot.tileName(for: d.symbol), symbol: d.symbol, size: 40)
+                    Text(d.text).pf(15, .semibold)
                     if let w = weather {
                         HStack(spacing: 4) {
-                            Text("\(Int(w.high.rounded()))°").font(f(14, .semibold))
-                            Text("\(Int(w.low.rounded()))°").font(f(14, .semibold)).opacity(0.6)
+                            Text("\(Int(w.high.rounded()))°").pf(14, .semibold)
+                            Text("\(Int(w.low.rounded()))°").pf(14, .semibold).opacity(0.6)
                         }
                     }
                 }
@@ -318,10 +329,10 @@ private struct ActivityRow: View {
     }
     private func stat(_ label: String, _ color: Color, _ value: String, _ unit: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(label).font(f(11, .semibold)).foregroundStyle(color).widgetAccentable()
+            Text(label).pf(11, .semibold).foregroundStyle(color).widgetAccentable()
             HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text(value).font(.system(size: 18, weight: .bold, design: .rounded)).monospacedDigit()
-                if !unit.isEmpty { Text(unit).font(f(12, .semibold)).opacity(0.8) }
+                Text(value).pf(18, .bold).monospacedDigit()
+                if !unit.isEmpty { Text(unit).pf(12, .semibold).opacity(0.8) }
             }
         }
     }
@@ -358,20 +369,17 @@ private struct TimerRow: View {
                 let phase = timer.phase(at: now)
                 let orange = Color(hex: 0xFF9F0A)
                 Button(intent: TimerToggleIntent()) {
-                    GlassCircle(tint: orange.opacity(0.35)) {
-                        Image(systemName: phase == .running ? "pause.fill" : "play.fill")
-                            .font(.system(size: 15, weight: .bold)).foregroundStyle(orange)
-                    }
+                    GlassButton(name: phase == .running ? "btn-pause" : "btn-play", symbol: phase == .running ? "pause.fill" : "play.fill")
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(phase == .running ? "Pause" : "Play")
                 Button(intent: TimerStopIntent()) {
-                    GlassCircle(tint: Color.white.opacity(0.1)) {
-                        Image(systemName: "xmark").font(.system(size: 15, weight: .bold)).foregroundStyle(.white)
-                    }
+                    GlassButton(name: "btn-stop", symbol: "xmark")
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Close")
                 Spacer()
-                Text("計時器").font(f(15, .semibold)).foregroundStyle(orange).widgetAccentable()
+                Text("計時器").pf(15, .semibold).foregroundStyle(orange).widgetAccentable()
                 Group {
                     switch phase {
                     case .running:
@@ -382,7 +390,7 @@ private struct TimerRow: View {
                         Text("\(defaultMinutes):00")
                     }
                 }
-                .font(.system(size: 30, weight: .medium, design: .rounded))
+                .pf(30, .medium)
                 .monospacedDigit()
                 .foregroundStyle(orange)
                 .widgetAccentable()
@@ -408,7 +416,7 @@ private struct LauncherRow: View {
                     .frame(maxWidth: .infinity)
                 }
                 if launchers.isEmpty {
-                    Text("在 app 裡挑五個 app").font(f(15, .medium)).opacity(0.7)
+                    Text("在 app 裡挑五個 app").pf(15, .medium).opacity(0.7)
                 }
             }
         }
@@ -447,7 +455,7 @@ private struct NoteRow: View {
             HStack(spacing: 12) {
                 Tile(name: "tile-note", symbol: "leaf.fill", size: 40)
                 Text(note.isEmpty ? "在 app 裡寫一句今天的話" : note)
-                    .font(f(15, .semibold))
+                    .pf(15, .semibold)
                     .lineLimit(2)
                     .opacity(note.isEmpty ? 0.6 : 1)
                 Spacer(minLength: 0)

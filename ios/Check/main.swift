@@ -39,6 +39,10 @@ do {
     let missingDaily = #"{"current":{"temperature_2m":1,"weather_code":0}}"#.data(using: .utf8)!
     check(WeatherSnapshot.parse(missingDaily) == nil, "missing daily → nil")
     check(WeatherSnapshot.parse(Data("garbage".utf8)) == nil, "garbage → nil")
+    // every symbol the WMO table can emit has a rendered tile; unknown symbols fall back
+    let symbols = Set([0,1,2,3,45,51,56,61,66,71,80,85,95,96].flatMap { c in [true,false].map { WeatherSnapshot(temperature: 0, high: 0, low: 0, code: c, isDay: $0, fetched: .init()).description.symbol } })
+    check(symbols.allSatisfy { WeatherSnapshot.tileName(for: $0) != "wx-unknown" }, "all WMO symbols map to a tile: \(symbols.filter { WeatherSnapshot.tileName(for: $0) == "wx-unknown" })")
+    check(WeatherSnapshot.tileName(for: "nope") == "wx-unknown", "unknown symbol → wx-unknown")
     let u = WeatherSnapshot.url(latitude: 25.033, longitude: 121.565).absoluteString
     check(u.contains("latitude=25.0330") && u.contains("longitude=121.5650") && u.contains("timezone=auto"), "url query")
 }
@@ -99,7 +103,7 @@ do {
     // Older config missing new keys must still decode (defaults fill in).
     let old = #"{"note":"x"}"#.data(using: .utf8)!
     let decodedOld = try? JSONDecoder().decode(PanelConfig.self, from: old)
-    check(decodedOld?.tint == 0.0 && decodedOld?.note == "x" && decodedOld?.timerMinutes == 5 && decodedOld?.launcherIDs.count == 5 && decodedOld?.showSeconds == false, "old config with missing keys keeps defaults")
+    check(decodedOld?.tint == 0.0 && decodedOld?.note == "x" && decodedOld?.timerMinutes == 5 && decodedOld?.launcherIDs.count == 5 && decodedOld?.showSeconds == false && decodedOld?.fontDesign == "rounded", "old config with missing keys keeps defaults")
 }
 
 // MARK: Mutation probes — flip one thing, expect red

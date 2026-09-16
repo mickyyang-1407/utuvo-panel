@@ -47,6 +47,12 @@ struct RootView: View {
 
                 Section("內容") {
                     Toggle(isOn: $model.config.showSeconds) { Row("seconds", "時間走秒") }
+                    Picker(selection: $model.config.fontDesign) {
+                        Text("SF Pro").tag("default")
+                        Text("SF Rounded").tag("rounded")
+                        Text("New York").tag("serif")
+                        Text("SF Mono").tag("mono")
+                    } label: { Row("text", "字型") }
                     Stepper(value: $model.config.timerMinutes, in: 1...180) { Row("timer", "計時器 \(model.config.timerMinutes) 分鐘") }
                     HStack(spacing: 12) {
                         SettingsIcon("text")

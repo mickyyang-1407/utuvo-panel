@@ -56,6 +56,8 @@ struct PanelConfig: Codable, Equatable {
     var note = ""
     /// Clock shows a live seconds counter instead of hh:mm.
     var showSeconds = false
+    /// Panel typeface: "default" (SF Pro), "rounded" (SF Rounded), "serif" (New York), "mono" (SF Mono).
+    var fontDesign = "rounded"
     var timerMinutes = 5
     var launcherIDs: [String] = ["music", "messages", "maps", "camera", "notes"]
     /// 0 = fully transparent wallpaper, 1 = opaque black.
@@ -82,6 +84,7 @@ struct PanelConfig: Codable, Equatable {
         showNote = try c.decodeIfPresent(Bool.self, forKey: .showNote) ?? d.showNote
         note = try c.decodeIfPresent(String.self, forKey: .note) ?? d.note
         showSeconds = try c.decodeIfPresent(Bool.self, forKey: .showSeconds) ?? d.showSeconds
+        fontDesign = try c.decodeIfPresent(String.self, forKey: .fontDesign) ?? d.fontDesign
         timerMinutes = try c.decodeIfPresent(Int.self, forKey: .timerMinutes) ?? d.timerMinutes
         launcherIDs = try c.decodeIfPresent([String].self, forKey: .launcherIDs) ?? d.launcherIDs
         tint = try c.decodeIfPresent(Double.self, forKey: .tint) ?? d.tint
@@ -178,6 +181,17 @@ struct WeatherSnapshot: Codable, Equatable {
         else { return nil }
         let isDay = ((current["is_day"] as? Int) ?? 1) == 1
         return WeatherSnapshot(temperature: temp, high: hi, low: lo, code: code, isDay: isDay, fetched: now)
+    }
+
+    /// SF Symbol → pre-rendered glass tile asset (tools/make-tiles.py `weather` list).
+    static func tileName(for symbol: String) -> String {
+        let map: [String: String] = [
+            "sun.max.fill": "wx-sun", "moon.stars.fill": "wx-moon-stars", "moon.fill": "wx-moon",
+            "cloud.sun.fill": "wx-cloud-sun", "cloud.moon.fill": "wx-cloud-moon", "cloud.fill": "wx-cloud",
+            "cloud.fog.fill": "wx-fog", "cloud.drizzle.fill": "wx-drizzle", "cloud.sleet.fill": "wx-sleet",
+            "cloud.rain.fill": "wx-rain", "cloud.snow.fill": "wx-snow", "cloud.heavyrain.fill": "wx-heavyrain",
+            "cloud.bolt.fill": "wx-bolt", "cloud.bolt.rain.fill": "wx-bolt-rain"]
+        return map[symbol] ?? "wx-unknown"
     }
 
     /// WMO code → (SF Symbol, 中文). Table from the Open-Meteo docs.

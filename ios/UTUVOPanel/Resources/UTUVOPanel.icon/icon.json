@@ -1,14 +1,12 @@
 {
+  "features": [
+    "refractivity",
+    "specular-location"
+  ],
   "fill-specializations": [
     {
       "value": {
-        "automatic-gradient": "extended-srgb:0.16,0.47,1.00,1.00000"
-      }
-    },
-    {
-      "appearance": "dark",
-      "value": {
-        "automatic-gradient": "extended-srgb:0.16,0.47,1.00,1.00000"
+        "automatic-gradient": "extended-srgb:0.16,0.47,1.00,1.00"
       }
     }
   ],
@@ -17,7 +15,7 @@
       "layers": [
         {
           "glass": true,
-          "image-name": "utuvo-panel-mark.svg",
+          "image-name": "utuvo-panel-mark-bold.svg",
           "name": "utuvo-panel-mark",
           "fill-specializations": [
             {
@@ -27,7 +25,7 @@
             }
           ],
           "position": {
-            "scale": 1.15,
+            "scale": 1.35,
             "translation-in-points": [
               0,
               0
@@ -42,8 +40,14 @@
       },
       "translucency": {
         "enabled": true,
-        "value": 0.5
-      }
+        "value": 0.45
+      },
+      "refractivity": {
+        "enabled": true,
+        "strength": 1.0,
+        "depth": 1.0
+      },
+      "specular-highlight-placement": "outside"
     }
   ],
   "supported-platforms": {

@@ -1,0 +1,56 @@
+{
+ "fill-specializations": [
+  {
+   "value": {
+    "automatic-gradient": "extended-srgb:0.16,0.47,1.00,1.00"
+   }
+  }
+ ],
+ "groups": [
+  {
+   "layers": [
+    {
+     "glass": true,
+     "image-name": "mark-bold.svg",
+     "name": "mark",
+     "fill-specializations": [
+      {
+       "value": {
+        "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+       }
+      }
+     ],
+     "position": {
+      "scale": 1.25,
+      "translation-in-points": [
+       0,
+       0
+      ]
+     }
+    }
+   ],
+   "lighting": "individual",
+   "shadow": {
+    "kind": "neutral",
+    "opacity": 0.5
+   },
+   "translucency": {
+    "enabled": true,
+    "value": 0.65
+   },
+   "refractivity": {
+    "enabled": true,
+    "strength": 0.6,
+    "depth": 0.5
+   },
+   "specular-highlight-placement": "inside"
+  }
+ ],
+ "supported-platforms": {
+  "squares": "shared"
+ },
+ "features": [
+  "refractivity",
+  "specular-location"
+ ]
+}

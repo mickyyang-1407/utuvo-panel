@@ -105,3 +105,16 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 用到的地方：面板五磚、一句話磚、設定頁所有列（`Row`／`SettingsIcon`）、常用 app 選單。Clear／tinted 模式回落白色符號在半透明板上。
 - 證據：`14-glass-tiles.png`、`15-widget-with-glass-tiles.png`、`16-settings-rows.png`、`17-icon-mark-blue.png`。真機已裝（`a8dc29c`）。
 - 「改到我覺得好為止」——下一輪等 Micky 指哪裡。
+
+## 23:20 第七輪：圓鈕／天氣走管線、字型可選、icon 依 macosicons.com 重做
+
+- **參考**（`23-macosicons-reference.png`，macosicons.com「macOS 27」搜尋前 16 顆）的共通點：字形粗、幾何、大（55–65%）、由厚玻璃筆畫構成，
+  重疊處半透明見層次；底是飽和 automatic gradient 或深底＋發光玻璃字形。我原本的 mark 是細線插畫，套玻璃只是描線。
+- 做法：家族 mark 用 SVG `stroke` 加粗（`mark-bold.svg`，stroke-width 120 路徑單位 ≈ +30 px）；再粗（220）內部細節糊掉，不用。
+  兩輪 12 候選（`18`、`19`），定 **bold-big＋refractivity**：scale 1.35、`features:["refractivity","specular-location"]`、
+  refractivity strength 1 depth 1、specular outside、translucency 0.45、藍 automatic gradient。四渲染 `20`。
+  linear-gradient 底 ictool 27.0 拒收（格式錯），沒追。
+- **圓鈕**（齒輪／播放／暫停／停止）用 `--platform watchOS`（circles）渲染；**天氣**每個 WMO 符號一顆磚（日藍／夜藍／灰）——
+  `make-tiles.py` 的 `circles`／`weather` 清單；自檢加了「WMO 表每個符號都有磚」。
+- **字型可選**：`PanelConfig.fontDesign` default／rounded／serif／mono，設定頁 Picker；面板所有文字走 `pf()`。
+- 真機已裝。

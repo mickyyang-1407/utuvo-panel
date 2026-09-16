@@ -1,0 +1,68 @@
+{
+ "fill-specializations": [
+  {
+   "value": {
+    "linear-gradient": {
+     "stops": [
+      {
+       "color": "extended-srgb:0.25,0.60,1.00,1.00",
+       "location": 0
+      },
+      {
+       "color": "extended-srgb:0.30,0.20,0.95,1.00",
+       "location": 1
+      }
+     ],
+     "angle": 0
+    }
+   }
+  }
+ ],
+ "groups": [
+  {
+   "layers": [
+    {
+     "glass": true,
+     "image-name": "mark-bold.svg",
+     "name": "mark",
+     "fill-specializations": [
+      {
+       "value": {
+        "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+       }
+      }
+     ],
+     "position": {
+      "scale": 1.25,
+      "translation-in-points": [
+       0,
+       0
+      ]
+     }
+    }
+   ],
+   "lighting": "individual",
+   "shadow": {
+    "kind": "neutral",
+    "opacity": 0.5
+   },
+   "translucency": {
+    "enabled": true,
+    "value": 0.5
+   },
+   "refractivity": {
+    "enabled": true,
+    "strength": 0.8,
+    "depth": 0.8
+   },
+   "specular-highlight-placement": "outside"
+  }
+ ],
+ "supported-platforms": {
+  "squares": "shared"
+ },
+ "features": [
+  "refractivity",
+  "specular-location"
+ ]
+}
