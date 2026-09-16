@@ -95,3 +95,13 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 選了 **panel-blue**（面板字形＋iOS 藍）；Default／Dark／ClearLight／ClearDark 四渲染 `12-icon-renditions.png`；
   Tinted 渲染 ictool 要 `--tint-color`，兩次失敗未追。真機已裝（commit `b8bfb52`）。
 - 這是品味決定，家族其他八顆仍是深底語彙——要不要全家族跟進是 Micky 的事。
+
+## 22:25 第六輪：icon 定案 mark-blue；app 內 icon 全走 ictool 管線
+
+- App icon＝**家族 mark＋iOS 藍 automatic-gradient＋白色 glass**（Micky 選）。候選包留在 `docs/icon-candidates/`。
+- **app 內所有 icon 不再手畫**：`tools/make-tiles.py` 把每顆磚當成迷你 App icon（同一份 icon.json 語彙）交給 `ictool` 渲染，
+  輸出 `ios/Shared/Tiles.xcassets`（27 顆 @3x，52 pt）。SF Symbol 圖層由 `tools/symbol2png.swift` 產（白色、49% 畫布）。
+  改 Launcher 預設或列 icon → 重跑 `python3 tools/make-tiles.py`（會重建整個 catalog）。
+- 用到的地方：面板五磚、一句話磚、設定頁所有列（`Row`／`SettingsIcon`）、常用 app 選單。Clear／tinted 模式回落白色符號在半透明板上。
+- 證據：`14-glass-tiles.png`、`15-widget-with-glass-tiles.png`、`16-settings-rows.png`、`17-icon-mark-blue.png`。真機已裝（`a8dc29c`）。
+- 「改到我覺得好為止」——下一輪等 Micky 指哪裡。
