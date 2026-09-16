@@ -4,9 +4,9 @@
 import Foundation
 
 enum Shared {
-    static let appGroup = "group.com.mickyyang.glasspanel"
-    static let widgetKind = "GlassPanel.Panel"
-    static let urlScheme = "glasspanel"
+    static let appGroup = "group.com.utuvo.panel"
+    static let widgetKind = "UTUVOPanel.Panel"
+    static let urlScheme = "utuvopanel"
 
     static var defaults: UserDefaults {
         UserDefaults(suiteName: appGroup) ?? .standard
@@ -54,12 +54,14 @@ struct PanelConfig: Codable, Equatable {
     var showNote = true
 
     var note = ""
+    /// Clock shows a live seconds counter instead of hh:mm.
+    var showSeconds = false
     var timerMinutes = 5
     var launcherIDs: [String] = ["music", "messages", "maps", "camera", "notes"]
     /// 0 = fully transparent wallpaper, 1 = opaque black.
     var tint: Double = 0.22
     /// Vertical placement of the panel inside the screenshot, 0 (top) … 1 (bottom).
-    var backgroundOffset: Double = 0.5
+    var backgroundOffset: Double = 0.286  // = PanelPlacement.defaultOffset on a 17 Pro (88 pt / (874−566)); app resets it on first pick
 
     var latitude: Double?
     var longitude: Double?
@@ -79,6 +81,7 @@ struct PanelConfig: Codable, Equatable {
         showLaunchers = try c.decodeIfPresent(Bool.self, forKey: .showLaunchers) ?? d.showLaunchers
         showNote = try c.decodeIfPresent(Bool.self, forKey: .showNote) ?? d.showNote
         note = try c.decodeIfPresent(String.self, forKey: .note) ?? d.note
+        showSeconds = try c.decodeIfPresent(Bool.self, forKey: .showSeconds) ?? d.showSeconds
         timerMinutes = try c.decodeIfPresent(Int.self, forKey: .timerMinutes) ?? d.timerMinutes
         launcherIDs = try c.decodeIfPresent([String].self, forKey: .launcherIDs) ?? d.launcherIDs
         tint = try c.decodeIfPresent(Double.self, forKey: .tint) ?? d.tint
@@ -129,7 +132,10 @@ struct Launcher: Identifiable, Equatable {
     /// the app receives it and forwards to the real scheme.
     var deepLink: URL { URL(string: "\(Shared.urlScheme)://launch/\(id)")! }
 
-    /// Parse `glasspanel://launch/<id>` back to a launcher. Anything else → nil.
+    /// The gear on the panel: opens the app's settings.
+    static var settingsDeepLink: URL { URL(string: "\(Shared.urlScheme)://settings")! }
+
+    /// Parse `utuvopanel://launch/<id>` back to a launcher. Anything else → nil.
     static func fromDeepLink(_ url: URL) -> Launcher? {
         guard url.scheme == Shared.urlScheme, url.host == "launch" else { return nil }
         let id = url.pathComponents.dropFirst().first ?? ""
@@ -281,19 +287,22 @@ struct PanelPlacement: Equatable {
         return PanelPlacement(screen: (screenWidth, screenHeight), panel: (w, (w * 1.618).rounded()))
     }
 
-    /// Top-inset (status bar + page dots) and bottom-inset (dock) the panel cannot cover.
-    var topInset: Double { (screen.height * 0.085).rounded() }
-    var bottomInset: Double { (screen.height * 0.145).rounded() }
+    /// Where the panel lands when it is the first item on a page scrolled to the top
+    /// (measured: icon grid starts 88 pt down on an 874-pt screen). Used as the default offset.
+    var defaultTop: Double { (screen.height * 0.1007).rounded() }
+    var defaultOffset: Double {
+        let range = max(screen.height - panel.height, 1)
+        return min(max(defaultTop / range, 0), 1)
+    }
 
-    /// Crop rect for `offset` in 0…1 (0 = just under the status bar, 1 = just above the dock).
+    /// Crop rect for `offset` in 0…1 over the whole screen (0 = top edge, 1 = bottom edge).
+    /// iOS 27 home pages scroll vertically, so no band is off-limits; the user drags it into place.
     /// Horizontally centred. Clamped so the rect is always inside the screen.
     func rect(offset: Double) -> (x: Double, y: Double, width: Double, height: Double) {
         let o = min(max(offset, 0), 1)
         let x = ((screen.width - panel.width) / 2).rounded()
-        let minY = topInset
-        let maxY = max(screen.height - bottomInset - panel.height, minY)
-        let y = (minY + (maxY - minY) * o).rounded()
-        let clampedY = min(max(y, 0), max(screen.height - panel.height, 0))
-        return (x, clampedY, panel.width, min(panel.height, screen.height))
+        let maxY = max(screen.height - panel.height, 0)
+        let y = (maxY * o).rounded()
+        return (x, y, panel.width, min(panel.height, screen.height))
     }
 }

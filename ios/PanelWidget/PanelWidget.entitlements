@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.com.mickyyang.glasspanel</string>
+		<string>group.com.utuvo.panel</string>
 	</array>
 </dict>
 </plist>

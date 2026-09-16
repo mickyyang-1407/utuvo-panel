@@ -47,10 +47,14 @@ final class WidgetFlowTests: XCTestCase {
         // Make sure we are on the first home page, not App Library.
         springboard.swipeRight(); sleep(1); springboard.swipeRight(); sleep(1)
         snap("home-before")
-        // Enter jiggle mode.
+        // Enter jiggle mode. Pages are full of widgets, so the long press usually opens a context menu;
+        // take its "Edit Home Screen" item when it does.
+        XCUIDevice.shared.press(.home); sleep(1)
         let blank = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
-        blank.press(forDuration: 2.0)
+        blank.press(forDuration: 1.5)
         sleep(2)
+        let editHome = springboard.buttons["Edit Home Screen"].firstMatch
+        if editHome.waitForExistence(timeout: 2) { editHome.tap(); sleep(2) }
         dump(springboard, "jiggle")
         snap("jiggle")
         // iOS 18+: "Edit" (top-left) → "Add Widget"; older: "+" button.
@@ -69,12 +73,12 @@ final class WidgetFlowTests: XCTestCase {
         // Search for our widget.
         let search = springboard.searchFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 5), "gallery search field")
-        search.tap(); search.typeText("透明")
+        search.tap(); search.typeText("UTUVO")
         sleep(2)
         snap("gallery-search")
         dump(springboard, "gallery-search")
-        let hit = springboard.cells.matching(NSPredicate(format: "label CONTAINS '透明面板' OR label CONTAINS 'GlassPanel'")).firstMatch
-        let hitAny = hit.exists ? hit : springboard.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS '透明面板'")).element(boundBy: 1)
+        let hit = springboard.cells.matching(NSPredicate(format: "label CONTAINS 'UTUVO Panel' OR label CONTAINS 'UTUVOPanel'")).firstMatch
+        let hitAny = hit.exists ? hit : springboard.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'UTUVO Panel'")).element(boundBy: 1)
         XCTAssertTrue(hitAny.waitForExistence(timeout: 5), "widget listed in gallery")
         hitAny.tap()
         sleep(2)
@@ -102,7 +106,7 @@ extension WidgetFlowTests {
         springboard.swipeRight(); sleep(1); springboard.swipeRight(); sleep(1)
         for page in 0..<4 {
             snap("page-\(page)")
-            let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS '透明面板' OR identifier CONTAINS 'GlassPanel' OR identifier CONTAINS 'glasspanel'"))
+            let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'UTUVO Panel' OR identifier CONTAINS 'UTUVOPanel' OR identifier CONTAINS 'glasspanel'"))
             let snapshot = ours.allElementsBoundByIndex
             for e in snapshot.prefix(5) {
                 print("=== OURS page \(page) type=\(e.elementType.rawValue) label=\(e.label) id=\(e.identifier) frame=\(e.frame) screen=\(springboard.frame)")
@@ -118,7 +122,7 @@ extension WidgetFlowTests {
     func test4_showWidget() {
         XCUIDevice.shared.press(.home); sleep(1)
         springboard.swipeRight(); sleep(1)
-        let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label == '透明面板' AND value CONTAINS 'Widget'")).firstMatch
+        let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label == 'UTUVO Panel' AND value CONTAINS 'Widget'")).firstMatch
         var tries = 0
         while tries < 8 {
             if ours.exists, ours.frame.minY >= 0, ours.frame.maxY <= springboard.frame.height { break }
@@ -136,10 +140,14 @@ extension WidgetFlowTests {
     private func scrollToWidget() -> XCUIElement {
         XCUIDevice.shared.press(.home); sleep(1)
         springboard.swipeRight(); sleep(1)
-        let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label == '透明面板' AND value CONTAINS 'Widget'")).firstMatch
+        let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label == 'UTUVO Panel' AND value CONTAINS 'Widget'")).firstMatch
         var tries = 0
-        while tries < 8 {
-            if ours.exists, ours.frame.minY >= 0, ours.frame.maxY <= springboard.frame.height { break }
+        while tries < 10 {
+            guard ours.exists else { springboard.swipeLeft(); sleep(1); tries += 1; continue }
+            let f = ours.frame, w = springboard.frame.width, h = springboard.frame.height
+            if f.minX >= w { springboard.swipeLeft(); sleep(1); tries += 1; continue }   // on a page to the right
+            if f.maxX <= 0 { springboard.swipeRight(); sleep(1); tries += 1; continue }  // on a page to the left
+            if f.minY >= 0, f.maxY <= h { break }
             springboard.swipeUp(); sleep(1); tries += 1
         }
         sleep(1)

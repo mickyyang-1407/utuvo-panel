@@ -4,7 +4,6 @@ import PhotosUI
 struct RootView: View {
     @EnvironmentObject private var model: PanelModel
     @State private var screenshotItem: PhotosPickerItem?
-    @State private var avatarItem: PhotosPickerItem?
     @State private var showPicker = false
 
     var body: some View {
@@ -21,13 +20,8 @@ struct RootView: View {
                         Label(model.screenshot == nil ? "選一張空桌面的截圖" : "換一張截圖", systemImage: "photo.on.rectangle.angled")
                     }
                     if model.screenshot != nil {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("面板位置").font(.subheadline)
-                            Slider(value: $model.config.backgroundOffset, in: 0...1) { editing in
-                                if !editing { model.recrop() }
-                            }
-                            Text("往下拉＝面板放低。加進桌面後，對一下邊緣再微調。")
-                                .font(.caption).foregroundStyle(.secondary)
+                        NavigationLink { AlignView() } label: {
+                            Label("對齊背景（拖曳面板到小工具的位置）", systemImage: "rectangle.and.hand.point.up.left")
                         }
                         Button("移除背景", role: .destructive) { model.clearScreenshot() }
                     }
@@ -38,7 +32,7 @@ struct RootView: View {
                 } header: {
                     Text("透明背景")
                 } footer: {
-                    Text("做法：把桌面滑到空白頁，截圖，回來選它。面板會裁下自己那一塊桌布，看起來就是透明的。"
+                    Text("免截圖的透明：設定 › 桌面與 App 資料庫 › 圖示樣式選「透明」，系統會自動把面板變成玻璃。\n要在全彩桌面上透明才需要截圖：把桌面滑到空白頁，截圖，回來選它，再用「對齊背景」拖到小工具的位置。"
                          + (model.panelSizeIsMeasured ? "" : "\n面板尺寸目前是估的；小工具加進桌面後會回報真實尺寸，之後重新裁一次就準了。"))
                 }
 
@@ -52,12 +46,7 @@ struct RootView: View {
                 }
 
                 Section("內容") {
-                    PhotosPicker(selection: $avatarItem, matching: .images) {
-                        Label(model.avatar == nil ? "頭像" : "換頭像", systemImage: "person.crop.circle")
-                    }
-                    if model.avatar != nil {
-                        Button("移除頭像", role: .destructive) { model.setAvatar(nil) }
-                    }
+                    Toggle("時間走秒", isOn: $model.config.showSeconds)
                     Stepper("計時器 \(model.config.timerMinutes) 分鐘", value: $model.config.timerMinutes, in: 1...180)
                     TextField("一句話", text: $model.config.note)
                 }
@@ -95,25 +84,19 @@ struct RootView: View {
                 Section("加到桌面") {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("1. 長按桌面空白處 → 左上「編輯」→「加入小工具」")
-                        Text("2. 搜尋「透明面板」")
+                        Text("2. 搜尋「UTUVO Panel」")
                         Text("3. 選最高的那個（iOS 27 特大直式），放到空白頁")
+                        Text("4. 面板右上角的齒輪會回到這裡")
                     }
                     .font(.subheadline)
                 }
             }
-            .navigationTitle("透明面板")
+            .navigationTitle("UTUVO Panel")
             .onChange(of: screenshotItem) { _, item in
                 guard let item else { return }
                 Task {
                     if let data = try? await item.loadTransferable(type: Data.self) { model.setScreenshot(data) }
                     screenshotItem = nil
-                }
-            }
-            .onChange(of: avatarItem) { _, item in
-                guard let item else { return }
-                Task {
-                    if let data = try? await item.loadTransferable(type: Data.self) { model.setAvatar(data) }
-                    avatarItem = nil
                 }
             }
             .task {

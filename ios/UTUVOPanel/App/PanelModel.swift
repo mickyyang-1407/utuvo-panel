@@ -15,7 +15,6 @@ final class PanelModel: NSObject, ObservableObject {
     }
     @Published private(set) var screenshot: UIImage?
     @Published private(set) var background: UIImage?
-    @Published private(set) var avatar: UIImage?
     @Published private(set) var activity: ActivitySnapshot?
 
     @Published private(set) var calendarStatus = "未詢問"
@@ -33,7 +32,6 @@ final class PanelModel: NSObject, ObservableObject {
         super.init()
         screenshot = UIImage(contentsOfFile: screenshotURL.path)
         background = UIImage(contentsOfFile: Shared.backgroundURL.path)
-        avatar = UIImage(contentsOfFile: Shared.avatarURL.path)
         activity = Shared.defaults.codable(ActivitySnapshot.self, forKey: Shared.Key.activity)
         location.delegate = self
         refreshStatuses()
@@ -49,7 +47,6 @@ final class PanelModel: NSObject, ObservableObject {
         var d = PanelData.sample
         d.config = config
         d.background = background
-        d.avatar = avatar
         d.activity = activity ?? d.activity
         d.timer = TimerState.load()
         if config.city == nil { d.config.city = "Taipei" }
@@ -80,6 +77,8 @@ final class PanelModel: NSObject, ObservableObject {
 
     func setScreenshot(_ data: Data) {
         guard let image = UIImage(data: data)?.normalized() else { return }
+        // First screenshot: start from where the widget sits as the first item on a page (measured 88 pt down).
+        if screenshot == nil { config.backgroundOffset = placement.defaultOffset }
         screenshot = image
         try? image.jpegData(compressionQuality: 0.95)?.write(to: screenshotURL, options: .atomic)
         recrop()
@@ -108,24 +107,6 @@ final class PanelModel: NSObject, ObservableObject {
         reloadWidget()
     }
 
-    func setAvatar(_ data: Data?) {
-        guard let data, let image = UIImage(data: data)?.normalized() else {
-            avatar = nil
-            try? FileManager.default.removeItem(at: Shared.avatarURL)
-            reloadWidget()
-            return
-        }
-        let side: CGFloat = 200
-        let renderer = UIGraphicsImageRenderer(size: CGSize(width: side, height: side))
-        let square = renderer.image { _ in
-            let s = max(side / image.size.width, side / image.size.height)
-            let w = image.size.width * s, h = image.size.height * s
-            image.draw(in: CGRect(x: (side - w) / 2, y: (side - h) / 2, width: w, height: h))
-        }
-        avatar = square
-        try? square.jpegData(compressionQuality: 0.9)?.write(to: Shared.avatarURL, options: .atomic)
-        reloadWidget()
-    }
 
     // MARK: Permissions
 

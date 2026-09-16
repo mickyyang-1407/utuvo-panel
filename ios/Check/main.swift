@@ -12,13 +12,15 @@ func check(_ cond: Bool, _ msg: String, file: String = #file, line: Int = #line)
 // MARK: Deep links
 do {
     let m = Launcher.byID("music")!
-    check(m.deepLink.absoluteString == "glasspanel://launch/music", "deep link shape")
+    check(m.deepLink.absoluteString == "utuvopanel://launch/music", "deep link shape")
     check(Launcher.fromDeepLink(m.deepLink)?.id == "music", "round-trip")
-    check(Launcher.fromDeepLink(URL(string: "glasspanel://launch/nope")!) == nil, "unknown id → nil")
+    check(Launcher.fromDeepLink(URL(string: "utuvopanel://launch/nope")!) == nil, "unknown id → nil")
     check(Launcher.fromDeepLink(URL(string: "https://launch/music")!) == nil, "wrong scheme → nil")
-    check(Launcher.fromDeepLink(URL(string: "glasspanel://open/music")!) == nil, "wrong host → nil")
+    check(Launcher.fromDeepLink(URL(string: "utuvopanel://open/music")!) == nil, "wrong host → nil")
     check(Set(Launcher.presets.map(\.id)).count == Launcher.presets.count, "preset ids unique")
     check(Launcher.presets.allSatisfy { URL(string: $0.url) != nil }, "every preset url parses")
+    check(Launcher.settingsDeepLink.absoluteString == "utuvopanel://settings", "settings link")
+    check(Launcher.fromDeepLink(Launcher.settingsDeepLink) == nil, "settings link is not a launcher")
 }
 
 // MARK: Weather parse + WMO table
@@ -75,8 +77,9 @@ do {
     check(p.panel.height == 566, "estimated height 350×1.618 (measured 565.67)")
     let top = p.rect(offset: 0), bottom = p.rect(offset: 1), mid = p.rect(offset: 0.5)
     check(top.x == 26 && bottom.x == 26, "centred")
-    check(top.y == p.topInset, "offset 0 sits under the status bar")
-    check(bottom.y + bottom.height == 874 - p.bottomInset, "offset 1 sits on the dock")
+    check(top.y == 0, "offset 0 is the top edge")
+    check(bottom.y + bottom.height == 874, "offset 1 is the bottom edge")
+    check(p.rect(offset: p.defaultOffset).y == 88, "default offset lands on the icon grid top (88 pt)")
     check(mid.y > top.y && mid.y < bottom.y, "mid between")
     check(p.rect(offset: 7).y == bottom.y && p.rect(offset: -2).y == top.y, "offset clamps")
     // Reported size taller than the usable band: must still be inside the screen.
@@ -96,13 +99,13 @@ do {
     // Older config missing new keys must still decode (defaults fill in).
     let old = #"{"note":"x"}"#.data(using: .utf8)!
     let decodedOld = try? JSONDecoder().decode(PanelConfig.self, from: old)
-    check(decodedOld?.note == "x" && decodedOld?.timerMinutes == 5 && decodedOld?.launcherIDs.count == 5, "old config with missing keys keeps defaults")
+    check(decodedOld?.note == "x" && decodedOld?.timerMinutes == 5 && decodedOld?.launcherIDs.count == 5 && decodedOld?.showSeconds == false, "old config with missing keys keeps defaults")
 }
 
 // MARK: Mutation probes — flip one thing, expect red
 do {
     // 1. Off-by-scheme: a deep link with the scheme upper-cased is a different URL and must not match.
-    check(Launcher.fromDeepLink(URL(string: "GLASSPANEL://launch/music")!) == nil, "probe: scheme is case-sensitive here")
+    check(Launcher.fromDeepLink(URL(string: "UTUVOPANEL://launch/music")!) == nil, "probe: scheme is case-sensitive here")
     // 2. Timer: toggling twice at the same instant returns to paused with full remaining.
     let t0 = Date()
     let twice = TimerState().toggled(at: t0, defaultMinutes: 3).toggled(at: t0, defaultMinutes: 3)

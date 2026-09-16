@@ -1,7 +1,7 @@
-# 透明面板 GlassPanel — 接手點（2026-09-16 18:10）
+# UTUVO Panel — 接手點（2026-09-16 20:30 更新）
 
 > 起因：Micky 丟一張小紅書截圖（Koco Widgets「iOS 27 特大尺寸組件」）說「我們也做一個吧」。
-> 非 Pik／UTUVO 產品線；獨立小 app，放 `~/Projects/glasspanel`（本機 git，**未開 GitHub repo**，等 Micky 說）。
+> 非 Pik／UTUVO 產品線；獨立小 app，放 `~/Projects/utuvo-panel`（本機 git，**未開 GitHub repo**，等 Micky 說）。
 > 命名「透明面板／GlassPanel」是我代決，可改。
 
 ## 現況：iOS 27 模擬器上小工具已在桌面活著，六條 UI 測試全綠
@@ -30,9 +30,9 @@
 
 跑法：
 ```
-cd ~/Projects/glasspanel/ios && xcodegen generate
-UDID=363878E7-E1F6-4F64-9D13-91F4C3E67BD2   # GlassPanel-iOS27-iPhone-17-Pro（iOS 27.0 runtime 已下載 8 GB）
-xcodebuild -project GlassPanel.xcodeproj -scheme GlassPanel -destination "platform=iOS Simulator,id=$UDID" -derivedDataPath ../DerivedData test
+cd ~/Projects/utuvo-panel/ios && xcodegen generate
+UDID=363878E7-E1F6-4F64-9D13-91F4C3E67BD2   # GlassPanel-iOS27-iPhone-17-Pro（sim 名未改）（iOS 27.0 runtime 已下載 8 GB）
+xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platform=iOS Simulator,id=$UDID" -derivedDataPath ../DerivedData test
 ```
 
 ## 已知限制／下一步
@@ -50,3 +50,15 @@ xcodebuild -project GlassPanel.xcodeproj -scheme GlassPanel -destination "platfo
 - 上真機（需簽章身分；DEVELOPMENT_TEAM 目前空）＋看透明對齊與 HealthKit 真數字
 - 品味：配色／字級／模組順序；名字要不要留「透明面板」
 - 要不要開 GitHub repo（private）
+
+## 20:30 第二輪（Micky 五點回饋）
+
+1. **免截圖透明＝iOS 26 系統「Clear」圖示樣式**：系統自動拿掉 widget 背景、換成玻璃、內容 accented 白化。
+   iScreen／Koco 就是靠這個；截圖法只給「全彩」桌面用。實作：`@Environment(\.widgetRenderingMode)`，
+   accented 時 `containerBackground` 不畫、卡片只留細框、彩色磚改半透明白；重點文字加 `.widgetAccentable()`。
+2. **裁切對齊**：實測面板當某頁第一個項目時 **頂邊 y = 88 pt**（874 pt 螢幕，10.07%）；
+   裁切範圍改成全螢幕 0…1，首次選截圖自動設到 88 pt，`AlignView` 用拖曳＋「往上／下 1 pt」微調。
+3. 人頭 → **齒輪**（`utuvopanel://settings` 回 app）。
+4. **時間走秒**開關：`Text(timerInterval: 當天 0:00…24:00, countsDown: false, showsHours: true)`，系統每秒推進，不吃 timeline。
+   WidgetKit 做不到「冒號閃爍」（最小更新粒度不是秒），這是替代。
+5. 質感：卡片 `glassEffect(.regular.tint(黑 18%))`＋漸層細框；圓鈕也玻璃；字體 SF Pro（數字 rounded）。

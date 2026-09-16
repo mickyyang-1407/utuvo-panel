@@ -1,6 +1,6 @@
-name: GlassPanel
+name: UTUVOPanel
 options:
-  bundleIdPrefix: com.mickyyang
+  bundleIdPrefix: com.utuvo
   deploymentTarget: { iOS: "27.0" }
   createIntermediateGroups: true
 settings:
@@ -10,24 +10,24 @@ settings:
     CODE_SIGN_STYLE: Automatic
     TARGETED_DEVICE_FAMILY: "1"
 targets:
-  GlassPanel:
+  UTUVOPanel:
     type: application
     platform: iOS
     sources:
-      - path: GlassPanel
+      - path: UTUVOPanel
       - path: Shared
     dependencies:
       - target: PanelWidget
         embed: true
     entitlements:
-      path: GlassPanel/GlassPanel.entitlements
+      path: UTUVOPanel/UTUVOPanel.entitlements
       properties:
-        com.apple.security.application-groups: [group.com.mickyyang.glasspanel]
+        com.apple.security.application-groups: [group.com.utuvo.panel]
         com.apple.developer.healthkit: true
     info:
-      path: GlassPanel/Info.plist
+      path: UTUVOPanel/Info.plist
       properties:
-        CFBundleDisplayName: "透明面板"
+        CFBundleDisplayName: "UTUVO Panel"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSCalendarsFullAccessUsageDescription: "面板要顯示你接下來的行程。"
@@ -35,12 +35,12 @@ targets:
         NSHealthShareUsageDescription: "面板要顯示今天的步數、運動與站立。"
         NSHealthUpdateUsageDescription: "不會寫入任何健康資料。"
         CFBundleURLTypes:
-          - CFBundleURLName: com.mickyyang.glasspanel
+          - CFBundleURLName: com.utuvo.panel
             CFBundleURLSchemes: [glasspanel]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.mickyyang.glasspanel
-        PRODUCT_NAME: GlassPanel
+        PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.panel
+        PRODUCT_NAME: UTUVOPanel
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "0.1"
         CURRENT_PROJECT_VERSION: "1"
@@ -53,37 +53,37 @@ targets:
     entitlements:
       path: PanelWidget/PanelWidget.entitlements
       properties:
-        com.apple.security.application-groups: [group.com.mickyyang.glasspanel]
+        com.apple.security.application-groups: [group.com.utuvo.panel]
     info:
       path: PanelWidget/Info.plist
       properties:
-        CFBundleDisplayName: "透明面板"
+        CFBundleDisplayName: "UTUVO Panel"
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
         NSCalendarsFullAccessUsageDescription: "面板要顯示你接下來的行程。"
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.mickyyang.glasspanel.panel
+        PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.panel.widget
         PRODUCT_NAME: PanelWidget
         MARKETING_VERSION: "0.1"
         CURRENT_PROJECT_VERSION: "1"
         SKIP_INSTALL: "YES"
-  GlassPanelUITests:
+  UTUVOPanelUITests:
     type: bundle.ui-testing
     platform: iOS
     sources: [UITests]
     dependencies:
-      - target: GlassPanel
+      - target: UTUVOPanel
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.mickyyang.glasspanel.uitests
-        TEST_TARGET_NAME: GlassPanel
+        PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.panel.uitests
+        TEST_TARGET_NAME: UTUVOPanel
         GENERATE_INFOPLIST_FILE: "YES"
 schemes:
-  GlassPanel:
+  UTUVOPanel:
     build:
-      targets: { GlassPanel: all, PanelWidget: all, GlassPanelUITests: [test] }
+      targets: { UTUVOPanel: all, PanelWidget: all, UTUVOPanelUITests: [test] }
     run: { config: Debug }
     test:
       config: Debug
-      targets: [GlassPanelUITests]
+      targets: [UTUVOPanelUITests]

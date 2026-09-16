@@ -2,7 +2,7 @@ import SwiftUI
 import WidgetKit
 
 @main
-struct GlassPanelApp: App {
+struct UTUVOPanelApp: App {
     @StateObject private var model = PanelModel()
 
     var body: some Scene {

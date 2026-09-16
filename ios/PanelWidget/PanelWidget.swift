@@ -48,13 +48,12 @@ struct PanelProvider: TimelineProvider {
         let event = config.showCalendar ? CalendarService.nextEvent(from: now) : nil
         let timer = TimerState.load()
         let background = UIImage(contentsOfFile: Shared.backgroundURL.path)
-        let avatar = UIImage(contentsOfFile: Shared.avatarURL.path)
 
         var entries: [PanelEntry] = []
         for i in 0..<30 {
             let date = minute.addingTimeInterval(TimeInterval(i * 60))
             let data = PanelData(date: date, config: config, weather: weather, activity: activity,
-                                 event: event, timer: timer, background: background, avatar: avatar,
+                                 event: event, timer: timer, background: background,
                                  compact: compact)
             entries.append(PanelEntry(date: date, data: data))
         }
@@ -124,7 +123,7 @@ struct PanelWidget: Widget {
         StaticConfiguration(kind: Shared.widgetKind, provider: PanelProvider()) { entry in
             PanelView(data: entry.data, inWidget: true)
         }
-        .configurationDisplayName("透明面板")
+        .configurationDisplayName("UTUVO Panel")
         .description("時間、行程、天氣、活動、計時器、常用 app，一塊透明的面板。")
         .supportedFamilies([.systemExtraLargePortrait, .systemLarge])
         .contentMarginsDisabled()
