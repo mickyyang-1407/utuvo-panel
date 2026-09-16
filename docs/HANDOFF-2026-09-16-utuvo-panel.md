@@ -62,3 +62,15 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 4. **時間走秒**開關：`Text(timerInterval: 當天 0:00…24:00, countsDown: false, showsHours: true)`，系統每秒推進，不吃 timeline。
    WidgetKit 做不到「冒號閃爍」（最小更新粒度不是秒），這是替代。
 5. 質感：卡片 `glassEffect(.regular.tint(黑 18%))`＋漸層細框；圓鈕也玻璃；字體 SF Pro（數字 rounded）。
+
+## 21:20 第三輪：「還是沒有透明」——實驗結論
+
+- **WidgetKit 沒有真透明。** 同一台 sim 實測：`containerBackground` 給 `Color.clear` → 系統墊深藍底；給 `Color.white.opacity(0.01)` → 墊白底。
+  證據 `docs/evidence-2026-09-16/07-clear-bg-is-opaque.png`、`08-alpha001-bg-is-opaque.png`。
+- **iScreen 也是截圖法**：搜到的教學與 App Store 說明都寫「需要一張空白桌面截圖／上傳壁紙」；「免截圖」是印象錯誤，
+  或是指 iOS 26「透明」圖示樣式（系統玻璃）。
+- 因此產品做法定案：
+  1. 全彩桌面 → 選**桌布原圖**（不必截圖）：app 把任何尺寸 aspect-fill 到螢幕尺寸（iOS 鋪桌布的方式），再裁面板那塊。
+  2. 「透明」圖示樣式 → 系統玻璃，accented 模式已支援。
+  3. 對齊：預設頂邊 88 pt（面板當該頁第一項），`AlignView` 拖曳＋±1 pt。桌布若開了「透視縮放」會有些微縮放差，目前只提供垂直微調。
+- sim 拿不到未模糊的桌布原檔（只有 PaperBoardUI 的 blur 快取），所以對齊的視覺證據只能在真機。
