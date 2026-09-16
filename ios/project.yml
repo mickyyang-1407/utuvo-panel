@@ -1,0 +1,70 @@
+name: GlassPanel
+options:
+  bundleIdPrefix: com.mickyyang
+  deploymentTarget: { iOS: "27.0" }
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGNING_REQUIRED: "NO"
+    CODE_SIGN_IDENTITY: ""
+    TARGETED_DEVICE_FAMILY: "1"
+targets:
+  GlassPanel:
+    type: application
+    platform: iOS
+    sources:
+      - path: GlassPanel
+      - path: Shared
+    dependencies:
+      - target: PanelWidget
+        embed: true
+    entitlements:
+      path: GlassPanel/GlassPanel.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.mickyyang.glasspanel]
+        com.apple.developer.healthkit: true
+    info:
+      path: GlassPanel/Info.plist
+      properties:
+        CFBundleDisplayName: "透明面板"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NSCalendarsFullAccessUsageDescription: "面板要顯示你接下來的行程。"
+        NSLocationWhenInUseUsageDescription: "面板要顯示你所在地的天氣。"
+        NSHealthShareUsageDescription: "面板要顯示今天的步數、運動與站立。"
+        NSHealthUpdateUsageDescription: "不會寫入任何健康資料。"
+        CFBundleURLTypes:
+          - CFBundleURLName: com.mickyyang.glasspanel
+            CFBundleURLSchemes: [glasspanel]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mickyyang.glasspanel
+        PRODUCT_NAME: GlassPanel
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: "1"
+  PanelWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: PanelWidget
+      - path: Shared
+    entitlements:
+      path: PanelWidget/PanelWidget.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.mickyyang.glasspanel]
+    info:
+      path: PanelWidget/Info.plist
+      properties:
+        CFBundleDisplayName: "透明面板"
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+        NSCalendarsFullAccessUsageDescription: "面板要顯示你接下來的行程。"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mickyyang.glasspanel.panel
+        PRODUCT_NAME: PanelWidget
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: "1"
+        SKIP_INSTALL: "YES"
