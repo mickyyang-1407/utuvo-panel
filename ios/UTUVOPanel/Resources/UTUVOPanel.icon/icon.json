@@ -1,0 +1,59 @@
+{
+  "fill-specializations": [
+    {
+      "value": {
+        "solid": "srgb:0.05098,0.06667,0.08627,1.00000"
+      }
+    },
+    {
+      "appearance": "dark",
+      "value": {
+        "solid": "srgb:0.05098,0.06667,0.08627,1.00000"
+      }
+    }
+  ],
+  "groups": [
+    {
+      "layers": [
+        {
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "srgb:0.80000,0.88235,0.96078,1.00000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "srgb:0.80000,0.88235,0.96078,1.00000"
+              }
+            }
+          ],
+          "image-name": "utuvo-panel-mark.svg",
+          "name": "utuvo-panel-mark",
+          "position": {
+            "scale": 1.15,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "circles": [
+      "watchOS"
+    ],
+    "squares": "shared"
+  }
+}

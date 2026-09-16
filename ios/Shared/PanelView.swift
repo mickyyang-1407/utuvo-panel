@@ -403,18 +403,40 @@ private struct LauncherRow: View {
                 let launchers = ids.prefix(5).compactMap(Launcher.byID)
                 ForEach(launchers) { l in
                     Link(destination: l.deepLink) {
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .fill(accented ? Color.white.opacity(0.18) : Color(hex: l.colorHex))
-                            .frame(width: 52, height: 52)
-                            .overlay {
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .strokeBorder(Color.white.opacity(0.35), lineWidth: 0.6)
+                        let tile = RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        Group {
+                            if accented {
+                                tile.fill(Color.white.opacity(0.18))
+                            } else {
+                                // iOS 26 icon language, drawn by hand (glassEffect tint washes out inside WidgetKit):
+                                // product colour as a translucent slab, specular top edge, soft bottom shade.
+                                let c = Color(hex: l.colorHex)
+                                tile.fill(c.opacity(0.78))
+                                    .overlay {
+                                        tile.fill(LinearGradient(stops: [
+                                            .init(color: Color.white.opacity(0.45), location: 0),
+                                            .init(color: Color.white.opacity(0.10), location: 0.45),
+                                            .init(color: Color.black.opacity(0.12), location: 1)],
+                                            startPoint: .top, endPoint: .bottom))
+                                    }
+                                    .overlay(alignment: .top) {
+                                        // specular highlight
+                                        Capsule().fill(Color.white.opacity(0.55))
+                                            .frame(width: 30, height: 3).padding(.top, 4).blur(radius: 1)
+                                    }
                             }
-                            .overlay {
-                                Image(systemName: l.symbol)
-                                    .font(.system(size: 24, weight: .semibold))
-                                    .foregroundStyle(.white)
-                            }
+                        }
+                        .frame(width: 52, height: 52)
+                        .overlay {
+                            tile.strokeBorder(LinearGradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.15)],
+                                                             startPoint: .top, endPoint: .bottom), lineWidth: 0.8)
+                        }
+                        .overlay {
+                            Image(systemName: l.symbol)
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .shadow(color: .black.opacity(0.25), radius: 1, y: 1)
+                        }
                     }
                     .frame(maxWidth: .infinity)
                 }

@@ -13,6 +13,7 @@
 		132CF7ED63C02840BF208996 /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AC22E5A135D41E8B89C4A9 /* PanelView.swift */; };
 		14FABBE19AD6DBFD2B4FA168 /* PanelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E688E69FF42BBD585BB4CC03 /* PanelModel.swift */; };
 		4A82DDC2E035B90AC54EDA05 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85C0F01B7FB335404E838C44 /* Assets.xcassets */; };
+		4FE39D2BA7EA4F6A6323F222 /* UTUVOPanel.icon in Resources */ = {isa = PBXBuildFile; fileRef = A288DFE1F448A8EDFDA311B3 /* UTUVOPanel.icon */; };
 		6C63DA0F3FF94C43D2A7AC6D /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23922C84EEE32F34453F81D3 /* RootView.swift */; };
 		78397D03783048580D7870AE /* Logic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3E69F7EC92364B196BB7EE /* Logic.swift */; };
 		9DA5883F15DE9EBA66C67358 /* UTUVOPanelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576EC5F7D63B9C721A13DDAB /* UTUVOPanelApp.swift */; };
@@ -68,6 +69,7 @@
 		576EC5F7D63B9C721A13DDAB /* UTUVOPanelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTUVOPanelApp.swift; sourceTree = "<group>"; };
 		746E0C76525C20B9467572F4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		85C0F01B7FB335404E838C44 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A288DFE1F448A8EDFDA311B3 /* UTUVOPanel.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = UTUVOPanel.icon; sourceTree = "<group>"; };
 		B081956EAACDE0F2660E19FF /* UTUVOPanel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UTUVOPanel.entitlements; sourceTree = "<group>"; };
 		B86D5CF2ED569864D7073A9D /* PanelWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelWidget.swift; sourceTree = "<group>"; };
 		E688E69FF42BBD585BB4CC03 /* PanelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelModel.swift; sourceTree = "<group>"; };
@@ -128,6 +130,7 @@
 			isa = PBXGroup;
 			children = (
 				85C0F01B7FB335404E838C44 /* Assets.xcassets */,
+				A288DFE1F448A8EDFDA311B3 /* UTUVOPanel.icon */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -271,6 +274,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4A82DDC2E035B90AC54EDA05 /* Assets.xcassets in Resources */,
+				4FE39D2BA7EA4F6A6323F222 /* UTUVOPanel.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -412,7 +416,7 @@
 		85CDA44B85FAD42226D4CDD7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = UTUVOPanel;
 				CODE_SIGN_ENTITLEMENTS = UTUVOPanel/UTUVOPanel.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
@@ -452,7 +456,7 @@
 		95D37DDF54A0386670CC3D9E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = UTUVOPanel;
 				CODE_SIGN_ENTITLEMENTS = UTUVOPanel/UTUVOPanel.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
