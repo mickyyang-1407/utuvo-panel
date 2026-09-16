@@ -127,3 +127,12 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 🔴 **Icon Composer 圖層順序＝第一個在最上面**（跟 Composer 面板一樣）。我先照底→頂寫，線條全被蓋掉；`render_custom` 現在 reverse。
 - 證據 `24-launcher-tiles-layered.png`、`25-launcher-row-on-panel.png`。真機已裝。
 - 下一步：Micky 要談 App icon 顏色；其餘 10 顆磚若也要分層手繪，照 CUSTOM 表加。
+
+## 09-17 07:50 第九輪：磚改用 ChatGPT 圖（Micky 拿我的 prompt 去畫）
+
+- 來源圖在 `docs/tile-sources-chatgpt/`（01 五顆／02 十顆／03 圓鈕／04 天氣 5×3）；prompt 在 `~/Desktop/UTUVO-Panel-icon-prompt/PROMPT-tiles.md`。
+- `tools/slice-tiles.py <img> squircle|circle <pt> <ids>`：純黑底找亮區→列→欄切格、正方化、1024 重取樣、
+  套 superellipse（k=5）或圓形遮罩（內縮 1.2% 去黑邊）、存 @3x。圓鈕 48 pt、app 磚 52 pt、天氣 44 pt。
+- 這批磚**不再走 ictool**（ChatGPT 已烤好玻璃）；`make-tiles.py` 仍管 tile-note 與設定頁列 icon（重跑會覆蓋 catalog！——
+  ⚠️ 要重跑 make-tiles 前先備份或改成只產缺的）。
+- 證據 `26`、`27`、`28`。真機已裝。
