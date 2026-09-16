@@ -118,3 +118,12 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
   `make-tiles.py` 的 `circles`／`weather` 清單；自檢加了「WMO 表每個符號都有磚」。
 - **字型可選**：`PanelConfig.fontDesign` default／rounded／serif／mono，設定頁 Picker；面板所有文字走 `pf()`。
 - 真機已裝。
+
+## 23:45 第八輪：五顆 app 磚改分層手繪（Micky：icon 喜歡了，磚太醜）
+
+- 醜的原因：SF Symbol 49% 細字形丟在漸層上。Apple 自家 icon 是大字形（60–65%）、粗、**多層物件**。
+- 做法：`tools/tiles/*.svg` 手繪分層（Music 雙音符／Messages 大泡泡／Maps 摺頁＋紅針／Camera 機身＋鏡頭圈＋藍鏡片／Notes 黃帶＋白紙＋灰線），
+  `make-tiles.py` 的 `CUSTOM` 表每層可設顏色、scale、glass、translucency。其餘 SF 磚改 bold、60%。
+- 🔴 **Icon Composer 圖層順序＝第一個在最上面**（跟 Composer 面板一樣）。我先照底→頂寫，線條全被蓋掉；`render_custom` 現在 reverse。
+- 證據 `24-launcher-tiles-layered.png`、`25-launcher-row-on-panel.png`。真機已裝。
+- 下一步：Micky 要談 App icon 顏色；其餘 10 顆磚若也要分層手繪，照 CUSTOM 表加。

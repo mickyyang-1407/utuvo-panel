@@ -28,10 +28,42 @@ POINTS=52; SCALE=3
 out=f"{ROOT}/ios/Shared/Tiles.xcassets"; shutil.rmtree(out,ignore_errors=True); os.makedirs(out)
 json.dump({"info":{"author":"xcode","version":1}},open(f"{out}/Contents.json","w"))
 tmp=tempfile.mkdtemp()
+# Hand-drawn, layered replicas in Apple's icon language (tools/tiles/*.svg). Each layer: (file, colour, scale, glass, translucency).
+WHITE="1.0,1.0,1.0"
+def rgb(h): return ",".join(f"{int(h[i:i+2],16)/255:.4f}" for i in (0,2,4))
+CUSTOM={
+ "music":    ("FC3C44",[("music-notes.svg",WHITE,1.0,True,0.45)]),
+ "messages": ("34C759",[("messages-bubble.svg",WHITE,1.0,True,0.45)]),
+ "camera":   ("6B6B70",[("camera-body.svg",WHITE,1.0,True,0.35),("camera-lens.svg",rgb("3A3A3F"),1.0,False,0.0),("camera-lens-inner.svg",rgb("8FC9FF"),1.0,True,0.5)]),
+ "maps":     ("39B8C9",[("maps-fold.svg",WHITE,1.0,True,0.45),("maps-pin.svg",rgb("FF3B30"),0.62,False,0.0)]),
+ "notes":    ("FFCC00",[("notes-paper.svg",WHITE,1.0,True,0.0),("notes-lines.svg",rgb("9A9AA0"),1.0,False,0.0)]),
+}
+def render_custom(id_,platform,points):
+    hexc,layers=CUSTOM[id_]
+    pkg=f"{tmp}/{id_}.icon"; shutil.rmtree(pkg,ignore_errors=True); os.makedirs(f"{pkg}/Assets")
+    groups=[]
+    for i,(f,col,scale,glass,transl) in enumerate(layers):
+        shutil.copy(f"{ROOT}/tools/tiles/{f}",f"{pkg}/Assets/{f}")
+        groups.append({"layers":[{"glass":glass,"image-name":f,"name":f"l{i}","fill-specializations":[{"value":{"solid":f"srgb:{col},1.0"}}],
+                                  "position":{"scale":scale,"translation-in-points":[0,0]}}],
+                       "lighting":"individual","shadow":{"kind":"neutral","opacity":0.5},"translucency":{"enabled":transl>0,"value":transl}})
+    # CUSTOM lists layers bottom→top; icon.json wants top first (Icon Composer's layer list order).
+    groups.reverse()
+    doc={"fill-specializations":[{"value":{"automatic-gradient":f"extended-srgb:{rgb(hexc)},1.0"}}],"groups":groups,"supported-platforms":{"squares":"shared"}}
+    json.dump(doc,open(f"{pkg}/icon.json","w"))
+    d=f"{out}/tile-{id_}.imageset"; shutil.rmtree(d,ignore_errors=True); os.makedirs(d)
+    png=f"{d}/tile-{id_}@3x.png"
+    r=subprocess.run([ICTOOL,pkg,"--export-image","--output-file",png,"--platform",platform,"--rendition","Default",
+                      "--width",str(points),"--height",str(points),"--scale",str(SCALE),"--design-generation","27"],capture_output=True,text=True)
+    if r.returncode: print("FAIL",id_,r.stderr[:200]); return
+    json.dump({"images":[{"filename":f"tile-{id_}@3x.png","idiom":"universal","scale":"3x"}],"info":{"author":"xcode","version":1}},open(f"{d}/Contents.json","w"),indent=2)
+    print("custom",id_,os.path.getsize(png))
+
 def render(id_,symbol,hexc,platform,points):
+    if id_ in CUSTOM: return render_custom(id_,platform,points)
     r,g,b=[int(hexc[i:i+2],16)/255 for i in (0,2,4)]
     pkg=f"{tmp}/{id_}.icon"; shutil.rmtree(pkg,ignore_errors=True); os.makedirs(f"{pkg}/Assets")
-    subprocess.check_output([SYM2PNG,symbol,f"{pkg}/Assets/glyph.png","560","medium"])
+    subprocess.check_output([SYM2PNG,symbol,f"{pkg}/Assets/glyph.png","560","bold"])
     doc={"fill-specializations":[{"value":{"automatic-gradient":f"extended-srgb:{r:.5f},{g:.5f},{b:.5f},1.00000"}}],
          "groups":[{"layers":[{"glass":True,"image-name":"glyph.png","name":"glyph",
                                "position":{"scale":1.0,"translation-in-points":[0,0]}}],

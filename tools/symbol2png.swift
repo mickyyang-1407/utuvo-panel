@@ -12,7 +12,7 @@ let img = base.withSymbolConfiguration(cfg)!
 let canvas = NSImage(size: NSSize(width: 1024, height: 1024))
 canvas.lockFocus()
 let r = img.size
-let scale = min(500 / r.width, 500 / r.height)   // glyph ≈ 49% of the canvas, like Apple's own icons
+let scale = min(600 / r.width, 600 / r.height)   // glyph ≈ 49% of the canvas, like Apple's own icons
 let w = r.width * scale, h = r.height * scale
 img.draw(in: NSRect(x: (1024 - w) / 2, y: (1024 - h) / 2, width: w, height: h), from: .zero, operation: .sourceOver, fraction: 1)
 canvas.unlockFocus()
