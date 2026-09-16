@@ -19,7 +19,7 @@ final class WidgetFlowTests: XCTestCase {
     func test1_pickScreenshot() {
         let app = XCUIApplication()
         app.launch()
-        let pick = app.buttons["選一張空桌面的截圖"].firstMatch
+        let pick = app.buttons.matching(NSPredicate(format: "label BEGINSWITH '選你的桌布' OR label == '換桌布'")).firstMatch
         XCTAssertTrue(pick.waitForExistence(timeout: 10), "picker button")
         pick.tap()
         // PhotosPicker is remote UI; find the first photo cell.
@@ -120,16 +120,9 @@ extension WidgetFlowTests {
 extension WidgetFlowTests {
     /// 4. Scroll page 0 until our widget is fully on screen, then screenshot it in place.
     func test4_showWidget() {
-        XCUIDevice.shared.press(.home); sleep(1)
-        springboard.swipeRight(); sleep(1)
-        let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label == 'UTUVO Panel' AND value CONTAINS 'Widget'")).firstMatch
-        var tries = 0
-        while tries < 8 {
-            if ours.exists, ours.frame.minY >= 0, ours.frame.maxY <= springboard.frame.height { break }
-            springboard.swipeUp(); sleep(1); tries += 1
-        }
+        let ours = scrollToWidget()
         sleep(2)
-        print("=== WIDGET frame=\(ours.frame) exists=\(ours.exists) tries=\(tries)")
+        print("=== WIDGET frame=\(ours.frame) exists=\(ours.exists)")
         snap("widget-in-place")
         XCTAssertTrue(ours.exists, "widget on screen")
     }
@@ -145,6 +138,7 @@ extension WidgetFlowTests {
         while tries < 10 {
             guard ours.exists else { springboard.swipeLeft(); sleep(1); tries += 1; continue }
             let f = ours.frame, w = springboard.frame.width, h = springboard.frame.height
+            print("=== LOOP try \(tries) frame=\(f) screen=\(w)x\(h)")
             if f.minX >= w { springboard.swipeLeft(); sleep(1); tries += 1; continue }   // on a page to the right
             if f.maxX <= 0 { springboard.swipeRight(); sleep(1); tries += 1; continue }  // on a page to the left
             if f.minY >= 0, f.maxY <= h { break }
@@ -192,5 +186,42 @@ extension WidgetFlowTests {
         sleep(2)
         snap("after-launcher-tap")
         XCTAssertTrue(ok, "Maps came to the foreground")
+    }
+}
+
+extension WidgetFlowTests {
+    /// 7a. Screenshot an empty home page (the one before App Library) — the "blank wallpaper" the user would take.
+    func test7a_emptyPageScreenshot() {
+        XCUIDevice.shared.press(.home); sleep(1)
+        for _ in 0..<3 { springboard.swipeRight(); usleep(500_000) }
+        // Walk right until the page has no icons/widgets and no App Library search field.
+        for page in 0..<6 {
+            let icons = springboard.icons.allElementsBoundByIndex.filter { $0.frame.minX >= 0 && $0.frame.maxX <= springboard.frame.width && $0.isHittable }
+            let inLibrary = springboard.searchFields["dewey-search-field"].exists && springboard.searchFields["dewey-search-field"].isHittable
+            print("=== PAGE \(page) icons=\(icons.count) library=\(inLibrary)")
+            if icons.isEmpty && !inLibrary { break }
+            if inLibrary { XCTFail("no empty page before App Library"); return }
+            springboard.swipeLeft(); sleep(1)
+        }
+        sleep(1)
+        snap("empty-page")
+    }
+
+    /// 7b. Pick the newest photo (last in Recents) — the screenshot added by the runner.
+    func test7b_pickNewest() {
+        let app = XCUIApplication()
+        app.launch()
+        let pick = app.buttons.matching(NSPredicate(format: "label BEGINSWITH '選你的桌布' OR label == '換桌布'")).firstMatch
+        XCTAssertTrue(pick.waitForExistence(timeout: 10))
+        pick.tap()
+        sleep(3)
+        let images = app.images.matching(NSPredicate(format: "label CONTAINS 'Photo' OR label CONTAINS '照片' OR label CONTAINS 'Screenshot' OR label CONTAINS '截圖'"))
+        XCTAssertTrue(images.firstMatch.waitForExistence(timeout: 8))
+        let all = images.allElementsBoundByIndex
+        print("=== PICKER \(all.count) images: \(all.map(\.label))")
+        all.last!.tap()
+        sleep(3)
+        XCTAssertTrue(app.buttons["移除背景"].waitForExistence(timeout: 10))
+        snap("app-after-pick-newest")
     }
 }

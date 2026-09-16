@@ -98,6 +98,9 @@ private struct BackgroundModifier: ViewModifier {
             if let image {
                 Image(uiImage: image).resizable().scaledToFill()
             } else {
+                // No wallpaper yet. WidgetKit always composites the widget onto an opaque backing
+                // (verified 2026-09-16: .clear and 1%-alpha both come out solid), so "transparent" on a
+                // full-colour Home Screen is only possible by drawing the wallpaper crop ourselves.
                 LinearGradient(colors: [Color(hex: 0x1E3A5F), Color(hex: 0x0B1B2B)],
                                startPoint: .top, endPoint: .bottom)
             }

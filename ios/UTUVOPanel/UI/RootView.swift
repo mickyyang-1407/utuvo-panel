@@ -17,7 +17,7 @@ struct RootView: View {
 
                 Section {
                     PhotosPicker(selection: $screenshotItem, matching: .images) {
-                        Label(model.screenshot == nil ? "選一張空桌面的截圖" : "換一張截圖", systemImage: "photo.on.rectangle.angled")
+                        Label(model.screenshot == nil ? "選你的桌布（原圖或空桌面截圖）" : "換桌布", systemImage: "photo.on.rectangle.angled")
                     }
                     if model.screenshot != nil {
                         NavigationLink { AlignView() } label: {
@@ -32,7 +32,7 @@ struct RootView: View {
                 } header: {
                     Text("透明背景")
                 } footer: {
-                    Text("免截圖的透明：設定 › 桌面與 App 資料庫 › 圖示樣式選「透明」，系統會自動把面板變成玻璃。\n要在全彩桌面上透明才需要截圖：把桌面滑到空白頁，截圖，回來選它，再用「對齊背景」拖到小工具的位置。"
+                    Text("iOS 不讓小工具真的透明（iScreen 也一樣要一張桌布）。選你設成桌布的那張原圖就好，會自動裁成面板那一塊；或滑到空白桌面截圖再選。加進桌面後用「對齊背景」拖到位。\n想完全免圖：設定 › 桌面與 App 資料庫 › 圖示樣式選「透明」，系統會把面板變成玻璃。"
                          + (model.panelSizeIsMeasured ? "" : "\n面板尺寸目前是估的；小工具加進桌面後會回報真實尺寸，之後重新裁一次就準了。"))
                 }
 
@@ -129,6 +129,12 @@ private struct PreviewCard: View {
             let s = min(geo.size.width / pw, 1)
             PanelView(data: model.previewData, inWidget: false)
                 .frame(width: pw, height: ph)
+                .background {
+                    if model.background == nil {
+                        LinearGradient(colors: [Color(hex: 0x6E8EAF), Color(hex: 0x2B3A4F)], startPoint: .top, endPoint: .bottom)
+                            .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
+                    }
+                }
                 .scaleEffect(s, anchor: .topLeading)
                 .frame(width: pw * s, height: ph * s)
                 .frame(maxWidth: .infinity)

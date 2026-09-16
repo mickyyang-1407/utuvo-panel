@@ -59,7 +59,7 @@ struct PanelConfig: Codable, Equatable {
     var timerMinutes = 5
     var launcherIDs: [String] = ["music", "messages", "maps", "camera", "notes"]
     /// 0 = fully transparent wallpaper, 1 = opaque black.
-    var tint: Double = 0.22
+    var tint: Double = 0.0
     /// Vertical placement of the panel inside the screenshot, 0 (top) … 1 (bottom).
     var backgroundOffset: Double = 0.286  // = PanelPlacement.defaultOffset on a 17 Pro (88 pt / (874−566)); app resets it on first pick
 

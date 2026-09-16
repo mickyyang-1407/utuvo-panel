@@ -76,8 +76,11 @@ final class PanelModel: NSObject, ObservableObject {
     // MARK: Wallpaper
 
     func setScreenshot(_ data: Data) {
-        guard let image = UIImage(data: data)?.normalized() else { return }
-        // First screenshot: start from where the widget sits as the first item on a page (measured 88 pt down).
+        guard let picked = UIImage(data: data)?.normalized() else { return }
+        // A screenshot is already screen-shaped. A wallpaper *photo* is not: iOS shows it aspect-filled
+        // and centred, so reproduce that here and the user never has to take a screenshot.
+        let image = picked.aspectFilled(to: Self.screenSize, scale: 3)
+        // First image: start from where the widget sits as the first item on a page (measured 88 pt down).
         if screenshot == nil { config.backgroundOffset = placement.defaultOffset }
         screenshot = image
         try? image.jpegData(compressionQuality: 0.95)?.write(to: screenshotURL, options: .atomic)
@@ -241,6 +244,20 @@ extension PanelModel: CLLocationManagerDelegate {
 // MARK: - UIImage
 
 extension UIImage {
+    /// Scale-to-fill `size` (in points, at `scale`) and centre-crop — the same fit iOS uses for wallpapers.
+    /// Returns self when the aspect already matches within 1%.
+    func aspectFilled(to size: CGSize, scale: CGFloat) -> UIImage {
+        let target = CGSize(width: size.width * scale, height: size.height * scale)
+        let ratio = self.size.width / self.size.height, want = target.width / target.height
+        if abs(ratio - want) / want < 0.01 { return self }
+        let s = max(target.width / self.size.width, target.height / self.size.height)
+        let w = self.size.width * s, h = self.size.height * s
+        let format = UIGraphicsImageRendererFormat(); format.scale = 1
+        return UIGraphicsImageRenderer(size: target, format: format).image { _ in
+            draw(in: CGRect(x: (target.width - w) / 2, y: (target.height - h) / 2, width: w, height: h))
+        }
+    }
+
     /// Bake EXIF orientation into the pixels so CGImage cropping works in display space.
     func normalized() -> UIImage {
         if imageOrientation == .up, scale == 1 { return self }

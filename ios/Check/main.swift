@@ -99,7 +99,7 @@ do {
     // Older config missing new keys must still decode (defaults fill in).
     let old = #"{"note":"x"}"#.data(using: .utf8)!
     let decodedOld = try? JSONDecoder().decode(PanelConfig.self, from: old)
-    check(decodedOld?.note == "x" && decodedOld?.timerMinutes == 5 && decodedOld?.launcherIDs.count == 5 && decodedOld?.showSeconds == false, "old config with missing keys keeps defaults")
+    check(decodedOld?.tint == 0.0 && decodedOld?.note == "x" && decodedOld?.timerMinutes == 5 && decodedOld?.launcherIDs.count == 5 && decodedOld?.showSeconds == false, "old config with missing keys keeps defaults")
 }
 
 // MARK: Mutation probes — flip one thing, expect red
