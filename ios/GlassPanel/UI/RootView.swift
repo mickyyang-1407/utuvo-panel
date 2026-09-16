@@ -17,7 +17,7 @@ struct RootView: View {
                 }
 
                 Section {
-                    PhotosPicker(selection: $screenshotItem, matching: .screenshots) {
+                    PhotosPicker(selection: $screenshotItem, matching: .images) {
                         Label(model.screenshot == nil ? "選一張空桌面的截圖" : "換一張截圖", systemImage: "photo.on.rectangle.angled")
                     }
                     if model.screenshot != nil {

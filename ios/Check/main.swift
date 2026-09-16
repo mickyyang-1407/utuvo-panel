@@ -71,10 +71,10 @@ do {
 // MARK: Crop geometry (iPhone 17 Pro, 402×874 pt)
 do {
     let p = PanelPlacement.estimated(screenWidth: 402, screenHeight: 874)
-    check(p.panel.width == 364, "estimated width = screen − 38")
-    check(p.panel.height == 586, "estimated height 364×1.61")
+    check(p.panel.width == 350, "estimated width = screen − 52 (measured 349.67)")
+    check(p.panel.height == 566, "estimated height 350×1.618 (measured 565.67)")
     let top = p.rect(offset: 0), bottom = p.rect(offset: 1), mid = p.rect(offset: 0.5)
-    check(top.x == 19 && bottom.x == 19, "centred")
+    check(top.x == 26 && bottom.x == 26, "centred")
     check(top.y == p.topInset, "offset 0 sits under the status bar")
     check(bottom.y + bottom.height == 874 - p.bottomInset, "offset 1 sits on the dock")
     check(mid.y > top.y && mid.y < bottom.y, "mid between")
@@ -85,7 +85,7 @@ do {
     check(r.y == 0 && r.height == 874, "oversize panel clamps to screen")
     // Different phone, same math.
     let se = PanelPlacement.estimated(screenWidth: 375, screenHeight: 667)
-    check(se.panel.width == 337 && se.rect(offset: 0).x == 19, "other screen width")
+    check(se.panel.width == 323 && se.rect(offset: 0).x == 26, "other screen width")
 }
 
 // MARK: Config round-trip

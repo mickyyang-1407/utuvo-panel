@@ -42,6 +42,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mickyyang.glasspanel
         PRODUCT_NAME: GlassPanel
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         MARKETING_VERSION: "0.1"
         CURRENT_PROJECT_VERSION: "1"
   PanelWidget:
@@ -68,3 +69,22 @@ targets:
         MARKETING_VERSION: "0.1"
         CURRENT_PROJECT_VERSION: "1"
         SKIP_INSTALL: "YES"
+  GlassPanelUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: GlassPanel
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mickyyang.glasspanel.uitests
+        TEST_TARGET_NAME: GlassPanel
+        GENERATE_INFOPLIST_FILE: "YES"
+schemes:
+  GlassPanel:
+    build:
+      targets: { GlassPanel: all, PanelWidget: all, GlassPanelUITests: [test] }
+    run: { config: Debug }
+    test:
+      config: Debug
+      targets: [GlassPanelUITests]

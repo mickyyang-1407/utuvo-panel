@@ -273,11 +273,12 @@ struct PanelPlacement: Equatable {
         a.screen == b.screen && a.panel == b.panel
     }
 
-    /// Fallback when the widget has not yet reported its display size:
-    /// width = large-widget width (screen − 2×19), height = 4-column × 6-row grid.
+    /// Fallback when the widget has not yet reported its display size.
+    /// Measured on iPhone 17 Pro / iOS 27.0 (24A434): displaySize 349.67 × 565.67 on a 402-pt screen,
+    /// i.e. 26 pt side margins and a 1.618 aspect. The provider's real value replaces this after first render.
     static func estimated(screenWidth: Double, screenHeight: Double) -> PanelPlacement {
-        let w = screenWidth - 38
-        return PanelPlacement(screen: (screenWidth, screenHeight), panel: (w, (w * 1.61).rounded()))
+        let w = screenWidth - 52
+        return PanelPlacement(screen: (screenWidth, screenHeight), panel: (w, (w * 1.618).rounded()))
     }
 
     /// Top-inset (status bar + page dots) and bottom-inset (dock) the panel cannot cover.
