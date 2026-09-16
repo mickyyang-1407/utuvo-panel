@@ -74,3 +74,14 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
   2. 「透明」圖示樣式 → 系統玻璃，accented 模式已支援。
   3. 對齊：預設頂邊 88 pt（面板當該頁第一項），`AlignView` 拖曳＋±1 pt。桌布若開了「透視縮放」會有些微縮放差，目前只提供垂直微調。
 - sim 拿不到未模糊的桌布原檔（只有 PaperBoardUI 的 blur 快取），所以對齊的視覺證據只能在真機。
+
+## 21:30 第四輪：icon 不是 Liquid Glass
+
+- 根因：App icon 給的是扁平 PNG appiconset；iOS 26 起要 **Icon Composer `.icon` 包**，系統才套 Liquid Glass（四變體）。
+- 家族語彙（`~/Projects/utuvo/company/utuvo-brand/icons/*/*.icon`）：九個產品**共用同一個 mark SVG**（md5 相同）、
+  同一個底 `srgb 0.051,0.067,0.086`、group shadow neutral 0.5＋translucency 0.5、scale 1.15，**只換一個產品色**。
+  已用：珊瑚／琥珀／紫／靛／紅／粉／綠／青／藍。Panel 取 **冰白 `srgb 0.80,0.88,0.96`**（玻璃產品）。
+- 接法：`UTUVOPanel/Resources/UTUVOPanel.icon` 放進 sources，`ASSETCATALOG_COMPILER_APPICON_NAME: UTUVOPanel`；
+  xcodegen 2.45.4 認得 `wrapper.icon`，actool 自動產 fallback PNG。扁平 appiconset 已刪。
+- 面板內五個 app 磚：`glassEffect(.tint)` 在 WidgetKit 內顏色會被洗白（證據 att17），改手繪：產品色 78%＋頂部鏡面漸層＋底部暗影＋髮絲邊。
+- 證據：`09-app-icon-liquid-glass.png`、`10-glass-launcher-tiles.png`。已裝真機。
