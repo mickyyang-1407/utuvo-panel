@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- a tall panel with three rows, the product itself -->
+  <rect x="292" y="212" width="440" height="600" rx="96" ry="96" fill="none" stroke="#000" stroke-width="44"/>
+  <rect x="372" y="318" width="280" height="64" rx="32" fill="#000"/>
+  <rect x="372" y="446" width="280" height="64" rx="32" fill="#000"/>
+  <rect x="372" y="574" width="280" height="64" rx="32" fill="#000"/>
+</svg>

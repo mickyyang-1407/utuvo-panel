@@ -85,3 +85,13 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
   xcodegen 2.45.4 認得 `wrapper.icon`，actool 自動產 fallback PNG。扁平 appiconset 已刪。
 - 面板內五個 app 磚：`glassEffect(.tint)` 在 WidgetKit 內顏色會被洗白（證據 att17），改手繪：產品色 78%＋頂部鏡面漸層＋底部暗影＋髮絲邊。
 - 證據：`09-app-icon-liquid-glass.png`、`10-glass-launcher-tiles.png`。已裝真機。
+
+## 21:50 第五輪：「icon 要跟 iOS 一樣」
+
+- 家族語彙（深底＋單色 mark）在 iOS 26 桌面上不像 Apple 自家 icon。Apple 語彙＝**`automatic-gradient` 單色底**（系統自動做上亮下暗）
+  ＋**白色 `glass: true` 字形**（厚度、鏡面、陰影由系統算）＋ `lighting: individual`。
+- 用 `ictool`（`Icon Composer.app/Contents/Executables/ictool`，`--design-generation 27`）離線渲染，不用進 SpringBoard 就能看：
+  六候選在 `docs/evidence-2026-09-16/11-icon-candidates-ictool.png`，候選 `.icon` 包在 `docs/icon-candidates/`。
+- 選了 **panel-blue**（面板字形＋iOS 藍）；Default／Dark／ClearLight／ClearDark 四渲染 `12-icon-renditions.png`；
+  Tinted 渲染 ictool 要 `--tint-color`，兩次失敗未追。真機已裝（commit `b8bfb52`）。
+- 這是品味決定，家族其他八顆仍是深底語彙——要不要全家族跟進是 Micky 的事。
