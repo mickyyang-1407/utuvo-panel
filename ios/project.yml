@@ -6,9 +6,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.10"
-    DEVELOPMENT_TEAM: ""
-    CODE_SIGNING_REQUIRED: "NO"
-    CODE_SIGN_IDENTITY: ""
+    DEVELOPMENT_TEAM: "RPNT54P79S"
+    CODE_SIGN_STYLE: Automatic
     TARGETED_DEVICE_FAMILY: "1"
 targets:
   GlassPanel:
