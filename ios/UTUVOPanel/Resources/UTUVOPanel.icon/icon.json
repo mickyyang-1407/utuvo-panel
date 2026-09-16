@@ -17,8 +17,8 @@
       "layers": [
         {
           "glass": true,
-          "image-name": "utuvo-panel-glyph.svg",
-          "name": "utuvo-panel-glyph",
+          "image-name": "utuvo-panel-mark.svg",
+          "name": "utuvo-panel-mark",
           "fill-specializations": [
             {
               "value": {
@@ -27,7 +27,7 @@
             }
           ],
           "position": {
-            "scale": 1.0,
+            "scale": 1.15,
             "translation-in-points": [
               0,
               0

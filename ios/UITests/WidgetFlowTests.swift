@@ -252,3 +252,13 @@ extension WidgetFlowTests {
         for i in 0..<5 { snap("walk-\(i)"); springboard.swipeLeft(); sleep(1) }
     }
 }
+
+extension WidgetFlowTests {
+    /// 10. Settings screen, top and scrolled.
+    func test10_settingsScreens() {
+        let app = XCUIApplication(); app.launch(); sleep(3)
+        snap("settings-top")
+        app.swipeUp(); sleep(1); snap("settings-mid")
+        app.swipeUp(); sleep(1); snap("settings-bottom")
+    }
+}

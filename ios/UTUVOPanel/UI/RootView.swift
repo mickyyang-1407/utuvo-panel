@@ -17,11 +17,11 @@ struct RootView: View {
 
                 Section {
                     PhotosPicker(selection: $screenshotItem, matching: .images) {
-                        Label(model.screenshot == nil ? "選你的桌布（原圖或空桌面截圖）" : "換桌布", systemImage: "photo.on.rectangle.angled")
+                        Row("wallpaper", model.screenshot == nil ? "選你的桌布（原圖或空桌面截圖）" : "換桌布")
                     }
                     if model.screenshot != nil {
                         NavigationLink { AlignView() } label: {
-                            Label("對齊背景（拖曳面板到小工具的位置）", systemImage: "rectangle.and.hand.point.up.left")
+                            Row("home", "對齊背景（拖曳面板到小工具的位置）")
                         }
                         Button("移除背景", role: .destructive) { model.clearScreenshot() }
                     }
@@ -37,18 +37,21 @@ struct RootView: View {
                 }
 
                 Section("模組") {
-                    Toggle("行事曆", isOn: $model.config.showCalendar)
-                    Toggle("天氣", isOn: $model.config.showWeather)
-                    Toggle("活動", isOn: $model.config.showActivity)
-                    Toggle("計時器", isOn: $model.config.showTimer)
-                    Toggle("常用 app", isOn: $model.config.showLaunchers)
-                    Toggle("一句話", isOn: $model.config.showNote)
+                    Toggle(isOn: $model.config.showCalendar) { Row("calendar", "行事曆") }
+                    Toggle(isOn: $model.config.showWeather) { Row("weather", "天氣") }
+                    Toggle(isOn: $model.config.showActivity) { Row("activity", "活動") }
+                    Toggle(isOn: $model.config.showTimer) { Row("timer", "計時器") }
+                    Toggle(isOn: $model.config.showLaunchers) { Row("grid", "常用 app") }
+                    Toggle(isOn: $model.config.showNote) { Row("note", "一句話") }
                 }
 
                 Section("內容") {
-                    Toggle("時間走秒", isOn: $model.config.showSeconds)
-                    Stepper("計時器 \(model.config.timerMinutes) 分鐘", value: $model.config.timerMinutes, in: 1...180)
-                    TextField("一句話", text: $model.config.note)
+                    Toggle(isOn: $model.config.showSeconds) { Row("seconds", "時間走秒") }
+                    Stepper(value: $model.config.timerMinutes, in: 1...180) { Row("timer", "計時器 \(model.config.timerMinutes) 分鐘") }
+                    HStack(spacing: 12) {
+                        SettingsIcon("text")
+                        TextField("一句話", text: $model.config.note)
+                    }
                 }
 
                 Section {
@@ -56,15 +59,11 @@ struct RootView: View {
                         LauncherPicker()
                     } label: {
                         HStack {
-                            Text("常用 app")
+                            Row("grid", "常用 app")
                             Spacer()
                             HStack(spacing: 4) {
                                 ForEach(model.config.launcherIDs.prefix(5).compactMap(Launcher.byID)) { l in
-                                    Image(systemName: l.symbol)
-                                        .font(.system(size: 11, weight: .semibold))
-                                        .foregroundStyle(.white)
-                                        .frame(width: 22, height: 22)
-                                        .background(RoundedRectangle(cornerRadius: 6).fill(Color(hex: l.colorHex)))
+                                    Image("tile-\(l.id)").resizable().interpolation(.high).frame(width: 22, height: 22)
                                 }
                             }
                         }
@@ -74,11 +73,9 @@ struct RootView: View {
                 }
 
                 Section("資料來源") {
-                    row("行事曆", model.calendarStatus) { model.requestCalendar() }
-                    row("定位（天氣）", model.locationStatus) { model.requestLocation() }
-                    row("健康（活動）", model.healthStatus) {
-                        model.requestHealth()
-                    }
+                    row("calendar", "行事曆", model.calendarStatus) { model.requestCalendar() }
+                    row("location", "定位（天氣）", model.locationStatus) { model.requestLocation() }
+                    row("health", "健康（活動）", model.healthStatus) { model.requestHealth() }
                 }
 
                 Section("加到桌面") {
@@ -106,10 +103,10 @@ struct RootView: View {
         }
     }
 
-    private func row(_ title: String, _ status: String, action: @escaping () -> Void) -> some View {
+    private func row(_ icon: String, _ title: String, _ status: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
-                Text(title).foregroundStyle(.primary)
+                Row(icon, title).foregroundStyle(.primary)
                 Spacer()
                 Text(status).font(.footnote).foregroundStyle(.secondary)
             }
@@ -162,11 +159,7 @@ private struct LauncherPicker: View {
                         }
                     } label: {
                         HStack(spacing: 12) {
-                            Image(systemName: l.symbol)
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .frame(width: 30, height: 30)
-                                .background(RoundedRectangle(cornerRadius: 8).fill(Color(hex: l.colorHex)))
+                            Image("tile-\(l.id)").resizable().interpolation(.high).frame(width: 30, height: 30)
                             Text(l.name).foregroundStyle(.primary)
                             Spacer()
                             if picked { Image(systemName: "checkmark").foregroundStyle(.tint) }
@@ -178,5 +171,28 @@ private struct LauncherPicker: View {
             }
         }
         .navigationTitle("常用 app")
+    }
+}
+
+
+// MARK: - Settings-style rows (icon tiles rendered by tools/make-tiles.py, same Liquid Glass as the Home Screen)
+
+struct SettingsIcon: View {
+    let name: String
+    init(_ name: String) { self.name = name }
+    var body: some View {
+        Image("tile-\(name)").resizable().interpolation(.high).frame(width: 29, height: 29)
+    }
+}
+
+struct Row: View {
+    let icon: String
+    let title: String
+    init(_ icon: String, _ title: String) { self.icon = icon; self.title = title }
+    var body: some View {
+        HStack(spacing: 12) {
+            SettingsIcon(icon)
+            Text(title)
+        }
     }
 }

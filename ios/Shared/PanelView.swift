@@ -403,40 +403,7 @@ private struct LauncherRow: View {
                 let launchers = ids.prefix(5).compactMap(Launcher.byID)
                 ForEach(launchers) { l in
                     Link(destination: l.deepLink) {
-                        let tile = RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        Group {
-                            if accented {
-                                tile.fill(Color.white.opacity(0.18))
-                            } else {
-                                // iOS 26 icon language, drawn by hand (glassEffect tint washes out inside WidgetKit):
-                                // product colour as a translucent slab, specular top edge, soft bottom shade.
-                                let c = Color(hex: l.colorHex)
-                                tile.fill(c.opacity(0.78))
-                                    .overlay {
-                                        tile.fill(LinearGradient(stops: [
-                                            .init(color: Color.white.opacity(0.45), location: 0),
-                                            .init(color: Color.white.opacity(0.10), location: 0.45),
-                                            .init(color: Color.black.opacity(0.12), location: 1)],
-                                            startPoint: .top, endPoint: .bottom))
-                                    }
-                                    .overlay(alignment: .top) {
-                                        // specular highlight
-                                        Capsule().fill(Color.white.opacity(0.55))
-                                            .frame(width: 30, height: 3).padding(.top, 4).blur(radius: 1)
-                                    }
-                            }
-                        }
-                        .frame(width: 52, height: 52)
-                        .overlay {
-                            tile.strokeBorder(LinearGradient(colors: [Color.white.opacity(0.7), Color.white.opacity(0.15)],
-                                                             startPoint: .top, endPoint: .bottom), lineWidth: 0.8)
-                        }
-                        .overlay {
-                            Image(systemName: l.symbol)
-                                .font(.system(size: 24, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .shadow(color: .black.opacity(0.25), radius: 1, y: 1)
-                        }
+                        Tile(name: "tile-\(l.id)", symbol: l.symbol, size: 52)
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -448,16 +415,37 @@ private struct LauncherRow: View {
     }
 }
 
+/// A launcher tile: pre-rendered by Apple's own icon renderer (tools/make-tiles.py → Tiles.xcassets),
+/// so it carries the same Liquid Glass as a real Home Screen icon. In Clear/tinted mode the system
+/// wants flat white content, so fall back to the symbol on a translucent slab.
+private struct Tile: View {
+    @Environment(\.panelAccented) private var accented
+    let name: String
+    let symbol: String
+    let size: CGFloat
+    var body: some View {
+        if accented {
+            RoundedRectangle(cornerRadius: size * 0.225, style: .continuous)
+                .fill(Color.white.opacity(0.18))
+                .overlay { Image(systemName: symbol).font(.system(size: size * 0.46, weight: .medium)).foregroundStyle(.white) }
+                .frame(width: size, height: size)
+        } else {
+            Image(name)
+                .resizable()
+                .interpolation(.high)
+                .widgetAccentedRenderingMode(.fullColor)
+                .frame(width: size, height: size)
+        }
+    }
+}
+
 private struct NoteRow: View {
     @Environment(\.panelAccented) private var accented
     let note: String
     var body: some View {
         Card {
             HStack(spacing: 12) {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(accented ? Color.white.opacity(0.18) : Color(hex: 0x2E7D32))
-                    .frame(width: 40, height: 40)
-                    .overlay { Image(systemName: "leaf.fill").foregroundStyle(accented ? .white : Color(hex: 0xC5FF7A)) }
+                Tile(name: "tile-note", symbol: "leaf.fill", size: 40)
                 Text(note.isEmpty ? "在 app 裡寫一句今天的話" : note)
                     .font(f(15, .semibold))
                     .lineLimit(2)
