@@ -211,3 +211,16 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 填寫稿 `docs/AppStore/1.0-metadata.md`（名稱／SKU／文案 en+zh／隱私問卷／審核備註／截圖規格／風險）。
 - 開源：README＋LICENSE（MIT，mark 與磚除外）；credscan 全史 415 blob 乾淨。**沒有 push、沒有建 remote**——等 Micky。
 - 真機已裝 archive 版（1.0 (1)）。
+
+## 09-17 12:50 第十八輪：App Store Connect 全部用 API 填完
+
+- Micky 在 ASC 網頁建了 app 紀錄：**UTUVO Panel，Apple ID 6812964840**，version 1.0 `cf1e60dc-…`，appInfo `5f213072-…`。
+- 第一次上傳被退 90474（iPhone-only 也要給 iPad 四方向）→ `UISupportedInterfaceOrientations~ipad` 四個＋`UIRequiresFullScreen`；
+  重 archive／export／上傳成功，**Delivery `6a02542c-9f6b-4913-a9d6-6fa6f9dfcd83`，build 1 VALID，已掛上 1.0**。IPA SHA `ee0aaa5b…`。
+- `tools/asc.py`（ES256 JWT，抄 Player Go 的 `asc_offer_codes.py`）填了：en-US／zh-Hant 名稱、副標、隱私政策網址（`utuvo.app/privacy/`）、
+  描述、關鍵字、宣傳文字、支援網址（`utuvo.app/faq/`）、類別 UTILITIES／PRODUCTIVITY、版權、手動發布、審核聯絡與備註、
+  年齡分級全 NONE（布林欄位要 false、`ageAssurance` 要 **false** 不是字串）、價格免費（USA 基準）、
+  **175 個地區可用（`/v2/appAvailabilities`，v1 路徑不存在）**、內容權利＝無第三方、6.9" 截圖兩語各 4 張
+  （API display type 用 `APP_IPHONE_67`，1320×2868 照收；`APP_IPHONE_69` 不存在）。
+- 截圖來源：Pro Max sim `UTUVO-Panel-Screenshots-17-Pro-Max`（`6E56E659-…`）跑 test4／5／10 的附件。
+- 🔴 **App Privacy（資料收集問卷）公開 API 沒有**——只能網頁填：Coarse Location／App Functionality／不連結／不追蹤，其他 No。這是提交前唯一卡點。
