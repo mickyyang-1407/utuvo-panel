@@ -456,8 +456,8 @@ private struct SystemRow: View {
         Card {
             HStack(spacing: 0) {
                 cell("tile-cpu", "cpu", system.map { "\(Int($0.cpuPercent.rounded()))%" } ?? "—", "CPU")
-                cell("tile-memory", "memorychip", system.map { SystemSnapshot.gb($0.memoryUsedBytes) + "G" } ?? "—", "RAM")
-                cell("tile-storage", "internaldrive", system.map { SystemSnapshot.gb($0.diskFreeBytes) + "G" } ?? "—", "可用")
+                cell("tile-memory", "memorychip", system.map { SystemSnapshot.gb($0.memoryUsedBytes) } ?? "—", "RAM")
+                cell("tile-storage", "internaldrive", system.map { SystemSnapshot.gb($0.diskFreeBytes) } ?? "—", "可用")
                 cell(system?.networkTile ?? "tile-offline", system?.networkSymbol ?? "wifi.slash",
                      system.flatMap { s in s.batteryLevel.map { "\(Int($0 * 100))%" } } ?? (system?.networkLabel ?? "—"),
                      system?.batteryLevel != nil ? (system?.networkLabel ?? "") : "連線")
