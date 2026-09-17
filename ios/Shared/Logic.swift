@@ -142,7 +142,7 @@ struct Launcher: Identifiable, Equatable {
 
     static let presets: [Launcher] = [
         Launcher(id: "music",     name: "音樂",     symbol: "music.note",          colorHex: 0xFC3C44, url: "music://"),
-        Launcher(id: "messages",  name: "訊息",     symbol: "message.fill",        colorHex: 0x34C759, url: "messages://"),
+        Launcher(id: "messages",  name: "訊息",     symbol: "message.fill",        colorHex: 0x34C759, url: "ichat://"),   // iOS 26: sms:/messages:// open compose; ichat:// opens the conversation list
         Launcher(id: "maps",      name: "地圖",     symbol: "map.fill",            colorHex: 0x30B0C7, url: "maps://"),
         Launcher(id: "camera",    name: "相機",     symbol: "camera.fill",         colorHex: 0x8E8E93, url: "camera://"),
         Launcher(id: "notes",     name: "備忘錄",   symbol: "note.text",           colorHex: 0xFFCC00, url: "mobilenotes://"),

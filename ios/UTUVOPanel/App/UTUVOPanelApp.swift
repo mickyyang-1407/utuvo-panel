@@ -16,8 +16,7 @@ struct UTUVOPanelApp: App {
                         UIApplication.shared.open(target)
                         return
                     }
-                    // The gear: straight into settings.
-                    if url == Launcher.settingsDeepLink { model.showSettings = true }
+                    // The gear / blank taps: the app *is* the settings screen now; nothing to route.
                 }
         }
     }

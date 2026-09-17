@@ -19,8 +19,6 @@ final class WidgetFlowTests: XCTestCase {
     func test1_pickScreenshot() {
         let app = XCUIApplication()
         app.launch()
-        let gear = app.buttons.matching(NSPredicate(format: "label == 'Settings' OR label == '設定'")).firstMatch
-        XCTAssertTrue(gear.waitForExistence(timeout: 10)); gear.tap(); sleep(1)
         let pick = app.buttons.matching(NSPredicate(format: "label BEGINSWITH '選你的桌布' OR label == '換桌布' OR label BEGINSWITH 'Choose your wallpaper' OR label == 'Change wallpaper'")).firstMatch
         XCTAssertTrue(pick.waitForExistence(timeout: 10), "picker button")
         pick.tap()
@@ -215,8 +213,6 @@ extension WidgetFlowTests {
     func test7b_pickNewest() {
         let app = XCUIApplication()
         app.launch()
-        let gear = app.buttons.matching(NSPredicate(format: "label == 'Settings' OR label == '設定'")).firstMatch
-        XCTAssertTrue(gear.waitForExistence(timeout: 10)); gear.tap(); sleep(1)
         let pick = app.buttons.matching(NSPredicate(format: "label BEGINSWITH '選你的桌布' OR label == '換桌布' OR label BEGINSWITH 'Choose your wallpaper' OR label == 'Change wallpaper'")).firstMatch
         XCTAssertTrue(pick.waitForExistence(timeout: 10))
         pick.tap()
@@ -263,16 +259,15 @@ extension WidgetFlowTests {
     /// 10. Settings screen, top and scrolled.
     func test10_settingsScreens() {
         let app = XCUIApplication(); app.launch(); sleep(3)
-        snap("home-preview")
-        let gear = app.buttons.matching(NSPredicate(format: "label == 'Settings' OR label == '設定'")).firstMatch
-        XCTAssertTrue(gear.waitForExistence(timeout: 10)); gear.tap(); sleep(2)
         snap("settings-top")
         app.swipeUp(); sleep(1); snap("settings-mid")
         app.swipeUp(); sleep(1); snap("settings-bottom")
         let done = app.buttons.matching(NSPredicate(format: "label == 'Done' OR label == '完成'")).firstMatch
-        XCTAssertTrue(done.waitForExistence(timeout: 5)); done.tap(); sleep(1)
+        XCTAssertTrue(done.waitForExistence(timeout: 5)); done.tap()
         snap("after-done")
-        XCTAssertFalse(done.exists, "Done closed the settings sheet")
+        let toast = app.descendants(matching: .any).matching(identifier: "appliedToast").firstMatch
+        if !toast.waitForExistence(timeout: 3) { print("=== TREE after-done ===\n\(app.debugDescription)\n=== END ===") }
+        XCTAssertTrue(toast.exists, "Done shows the applied toast")
     }
 }
 

@@ -762,16 +762,6 @@
         }
       }
     },
-    "點面板上的圖示會先回到這個 app，再跳到目標 app。iOS 只允許小工具開自己的 app。": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tapping an icon on the panel opens this app first, then the target app. iOS only lets widgets open their own app."
-          }
-        }
-      }
-    },
     "（無標題）": {
       "localizations": {
         "en": {
@@ -1108,6 +1098,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open app"
+          }
+        }
+      }
+    },
+    "已套用到面板，按 Home 回桌面": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applied to the panel — press Home to go back"
+          }
+        }
+      }
+    },
+    "點面板上的圖示直接開該 app；日曆、天氣、活動列也會開對應的 app。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Icons on the panel open their app directly; the calendar, weather and activity rows open theirs too."
           }
         }
       }

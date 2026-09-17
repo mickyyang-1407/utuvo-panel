@@ -188,3 +188,11 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 五磚、行事曆／天氣／活動列全改 `Button(intent: OpenAppIntent)`；test6 加斷言「本 app 不在前景」，過。
 - 空白處（含系統列、標頭）`.widgetURL(settings)` → 直接開設定 sheet，不再落在沒反應的預覽頁。
 - 真機已裝（`Messages`／`Weather`／`Fitness` scheme 只能真機驗）。
+
+## 09-17 11:45 第十六輪：預覽頁拿掉、Messages 用 ichat://
+
+- iOS 不允許 app 自己回桌面，「完成」做不到退出；預覽頁沒必要 → app 開起來就是設定（預覽在最上面），
+  完成＝reload widget＋toast「已套用到面板，按 Home 回桌面」（4 s）。`showSettings` 已無作用。
+- 🔴 **iOS 26 起 `sms:`／`messages://`／`imessage://` 全部開「新訊息」**（Apple 社群 256213344），
+  只有 **`ichat://`** 開對話列表；sim 四 scheme 截圖＋ichat 截圖 `39`。Check 加驗。
+- 設定頁 footer 那句「會先回到這個 app」已過時，改掉。
