@@ -136,3 +136,15 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 這批磚**不再走 ictool**（ChatGPT 已烤好玻璃）；`make-tiles.py` 仍管 tile-note 與設定頁列 icon（重跑會覆蓋 catalog！——
   ⚠️ 要重跑 make-tiles 前先備份或改成只產缺的）。
 - 證據 `26`、`27`、`28`。真機已裝。
+
+## 09-17 08:20 第十輪：「一句話」列換成系統列
+
+- Micky：沒人會寫一句話，改放 CPU／Storage／Wi-Fi／藍牙開關或監看。
+- **開關做不到**（iOS 沒有第三方切 Wi-Fi／藍牙／飛航的 API，app 內都不行）。**監看**做：
+  `Shared/SystemStats.swift`——CPU（host_processor_info 兩次取樣 0.25 s）、RAM（vm_statistics64 active+wired+compressed）、
+  儲存（volumeAvailableCapacityForImportantUsage）、連線（NWPathMonitor 1 s 逾時）、電量（UIDevice，extension 讀不到就 nil）。
+- 快照存 `panel.system`；timeline 改 15 分鐘一輪。sim 上讀到的是 Mac 的數字（512 GB／16 TB／wired），真機才是手機的。
+- `showNote` 退役（key 留著給舊 config 解碼），新 `showSystem`。設定頁的一句話輸入框拿掉。
+- `make-tiles.py` 改成**只產缺的或指定的 id**，不再整個 catalog 重建（ChatGPT 磚不會被蓋）。系統列六顆磚先用管線版，
+  要高質感再請 ChatGPT 畫：cpu／memory／storage／wifi／cellular／offline。
+- 證據 `29-system-row.png`。真機已裝。

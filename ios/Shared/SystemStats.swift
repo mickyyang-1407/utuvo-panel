@@ -1,0 +1,117 @@
+// SystemStats.swift — what a widget extension can legitimately read about the device.
+// No toggles: iOS gives third-party code no API to switch Wi-Fi / Bluetooth / Airplane mode.
+
+import Foundation
+import Network
+import UIKit
+
+struct SystemSnapshot: Codable, Equatable {
+    var cpuPercent: Double          // 0…100, all cores averaged over the sample window
+    var memoryUsedBytes: UInt64
+    var memoryTotalBytes: UInt64
+    var diskFreeBytes: UInt64
+    var diskTotalBytes: UInt64
+    var network: String             // "wifi" | "cellular" | "wired" | "none"
+    var batteryLevel: Double?       // 0…1, nil when the extension cannot read it
+    var sampled: Date
+
+    static func gb(_ bytes: UInt64) -> String {
+        let g = Double(bytes) / 1_000_000_000
+        return g >= 100 ? String(format: "%.0f", g) : String(format: "%.1f", g)
+    }
+    var networkLabel: String {
+        switch network { case "wifi": return "Wi-Fi"; case "cellular": return "行動"; case "wired": return "有線"; default: return "離線" }
+    }
+    var networkTile: String {
+        switch network { case "wifi": return "tile-wifi"; case "cellular": return "tile-cellular"; case "wired": return "tile-wifi"; default: return "tile-offline" }
+    }
+    var networkSymbol: String {
+        switch network { case "wifi": return "wifi"; case "cellular": return "antenna.radiowaves.left.and.right"; case "wired": return "cable.connector"; default: return "wifi.slash" }
+    }
+}
+
+enum SystemStats {
+    /// CPU busy fraction between two host_processor_info samples, `window` seconds apart.
+    static func sample(window: TimeInterval = 0.25) async -> SystemSnapshot {
+        let t0 = cpuTicks()
+        try? await Task.sleep(nanoseconds: UInt64(window * 1_000_000_000))
+        let t1 = cpuTicks()
+        var cpu = 0.0
+        if let a = t0, let b = t1 {
+            let busy = Double((b.user - a.user) + (b.system - a.system) + (b.nice - a.nice))
+            let total = busy + Double(b.idle - a.idle)
+            cpu = total > 0 ? min(max(busy / total * 100, 0), 100) : 0
+        }
+        let (memUsed, memTotal) = memory()
+        let (diskFree, diskTotal) = disk()
+        let net = await networkKind()
+        UIDevice.current.isBatteryMonitoringEnabled = true
+        let level = UIDevice.current.batteryLevel
+        return SystemSnapshot(cpuPercent: cpu, memoryUsedBytes: memUsed, memoryTotalBytes: memTotal,
+                              diskFreeBytes: diskFree, diskTotalBytes: diskTotal, network: net,
+                              batteryLevel: level >= 0 ? Double(level) : nil, sampled: Date())
+    }
+
+    private struct Ticks { var user, system, nice, idle: UInt64 }
+
+    private static func cpuTicks() -> Ticks? {
+        var count = mach_msg_type_number_t(0)
+        var info: processor_info_array_t?
+        var n: natural_t = 0
+        guard host_processor_info(mach_host_self(), PROCESSOR_CPU_LOAD_INFO, &n, &info, &count) == KERN_SUCCESS, let info else { return nil }
+        defer { vm_deallocate(mach_task_self_, vm_address_t(bitPattern: info), vm_size_t(count) * vm_size_t(MemoryLayout<integer_t>.size)) }
+        var t = Ticks(user: 0, system: 0, nice: 0, idle: 0)
+        let stride = Int(CPU_STATE_MAX)
+        for i in 0..<Int(n) {
+            t.user += UInt64(info[i * stride + Int(CPU_STATE_USER)])
+            t.system += UInt64(info[i * stride + Int(CPU_STATE_SYSTEM)])
+            t.nice += UInt64(info[i * stride + Int(CPU_STATE_NICE)])
+            t.idle += UInt64(info[i * stride + Int(CPU_STATE_IDLE)])
+        }
+        return t
+    }
+
+    private static func memory() -> (UInt64, UInt64) {
+        let total = ProcessInfo.processInfo.physicalMemory
+        var stats = vm_statistics64()
+        var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64>.size / MemoryLayout<integer_t>.size)
+        let kr = withUnsafeMutablePointer(to: &stats) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) { host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &count) }
+        }
+        guard kr == KERN_SUCCESS else { return (0, total) }
+        let page = UInt64(vm_kernel_page_size)
+        // "used" the way Activity Monitor counts it: active + wired + compressed
+        let used = (UInt64(stats.active_count) + UInt64(stats.wire_count) + UInt64(stats.compressor_page_count)) * page
+        return (min(used, total), total)
+    }
+
+    private static func disk() -> (UInt64, UInt64) {
+        let url = URL(fileURLWithPath: NSHomeDirectory())
+        let v = try? url.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey, .volumeTotalCapacityKey])
+        return (UInt64(max(v?.volumeAvailableCapacityForImportantUsage ?? 0, 0)), UInt64(max(v?.volumeTotalCapacity ?? 0, 0)))
+    }
+
+    private static func networkKind() async -> String {
+        await withCheckedContinuation { cont in
+            let monitor = NWPathMonitor()
+            var done = false
+            monitor.pathUpdateHandler = { path in
+                guard !done else { return }
+                done = true
+                let kind: String
+                if path.status != .satisfied { kind = "none" }
+                else if path.usesInterfaceType(.wifi) { kind = "wifi" }
+                else if path.usesInterfaceType(.cellular) { kind = "cellular" }
+                else if path.usesInterfaceType(.wiredEthernet) { kind = "wired" }
+                else { kind = "wifi" }
+                monitor.cancel()
+                cont.resume(returning: kind)
+            }
+            monitor.start(queue: DispatchQueue.global(qos: .utility))
+            DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
+                guard !done else { return }
+                done = true; monitor.cancel(); cont.resume(returning: "none")
+            }
+        }
+    }
+}

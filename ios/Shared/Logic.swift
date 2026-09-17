@@ -24,6 +24,7 @@ enum Shared {
         static let activity = "panel.activity"
         static let timer = "panel.timer"
         static let displaySize = "panel.displaySize"   // written by the widget provider
+        static let system = "panel.system"
     }
 }
 
@@ -51,7 +52,8 @@ struct PanelConfig: Codable, Equatable {
     var showActivity = true
     var showTimer = true
     var showLaunchers = true
-    var showNote = true
+    var showNote = false      // retired row, kept so old configs decode
+    var showSystem = true
 
     var note = ""
     /// Clock shows a live seconds counter instead of hh:mm.
@@ -82,6 +84,7 @@ struct PanelConfig: Codable, Equatable {
         showTimer = try c.decodeIfPresent(Bool.self, forKey: .showTimer) ?? d.showTimer
         showLaunchers = try c.decodeIfPresent(Bool.self, forKey: .showLaunchers) ?? d.showLaunchers
         showNote = try c.decodeIfPresent(Bool.self, forKey: .showNote) ?? d.showNote
+        showSystem = try c.decodeIfPresent(Bool.self, forKey: .showSystem) ?? d.showSystem
         note = try c.decodeIfPresent(String.self, forKey: .note) ?? d.note
         showSeconds = try c.decodeIfPresent(Bool.self, forKey: .showSeconds) ?? d.showSeconds
         fontDesign = try c.decodeIfPresent(String.self, forKey: .fontDesign) ?? d.fontDesign

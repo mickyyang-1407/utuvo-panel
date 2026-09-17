@@ -16,6 +16,7 @@ struct PanelData {
     var activity: ActivitySnapshot?
     var event: EventInfo?
     var timer: TimerState
+    var system: SystemSnapshot?
     var background: UIImage?
     /// systemLarge gets the short version; systemExtraLargePortrait gets everything.
     var compact: Bool = false
@@ -31,6 +32,8 @@ struct PanelData {
             activity: ActivitySnapshot(steps: 3264, exerciseMinutes: 45, standHours: 6, moveKcal: 320),
             event: EventInfo(title: "Morning Meeting", start: now.addingTimeInterval(3600), end: now.addingTimeInterval(3600 * 3.5), isAllDay: false),
             timer: TimerState(endDate: now.addingTimeInterval(312), pausedRemaining: nil),
+            system: SystemSnapshot(cpuPercent: 12, memoryUsedBytes: 3_100_000_000, memoryTotalBytes: 8_000_000_000,
+                                   diskFreeBytes: 118_000_000_000, diskTotalBytes: 256_000_000_000, network: "wifi", batteryLevel: 0.81, sampled: now),
             background: nil)
     }
 }
@@ -73,7 +76,7 @@ struct PanelView: View {
                 if data.config.showTimer { TimerRow(timer: data.timer, now: data.date, defaultMinutes: data.config.timerMinutes).frame(height: 58) }
             }
             if data.config.showLaunchers { LauncherRow(ids: data.config.launcherIDs).frame(height: 68) }
-            if !data.compact, data.config.showNote { NoteRow(note: data.config.note).frame(height: 56) }
+            if !data.compact, data.config.showSystem { SystemRow(system: data.system).frame(height: 62) }
             Spacer(minLength: 0)
         }
         .foregroundStyle(.white)
@@ -447,22 +450,29 @@ private struct Tile: View {
     }
 }
 
-private struct NoteRow: View {
-    @Environment(\.panelAccented) private var accented
-    let note: String
+private struct SystemRow: View {
+    let system: SystemSnapshot?
     var body: some View {
         Card {
-            HStack(spacing: 12) {
-                Tile(name: "tile-note", symbol: "leaf.fill", size: 40)
-                Text(note.isEmpty ? "在 app 裡寫一句今天的話" : note)
-                    .pf(15, .semibold)
-                    .lineLimit(2)
-                    .opacity(note.isEmpty ? 0.6 : 1)
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right.circle")
-                    .font(.system(size: 22, weight: .regular))
-                    .opacity(0.7)
+            HStack(spacing: 0) {
+                cell("tile-cpu", "cpu", system.map { "\(Int($0.cpuPercent.rounded()))%" } ?? "—", "CPU")
+                cell("tile-memory", "memorychip", system.map { SystemSnapshot.gb($0.memoryUsedBytes) + "/" + SystemSnapshot.gb($0.memoryTotalBytes) } ?? "—", "RAM GB")
+                cell("tile-storage", "internaldrive", system.map { SystemSnapshot.gb($0.diskFreeBytes) } ?? "—", "剩餘 GB")
+                cell(system?.networkTile ?? "tile-offline", system?.networkSymbol ?? "wifi.slash",
+                     system.flatMap { s in s.batteryLevel.map { "\(Int($0 * 100))%" } } ?? (system?.networkLabel ?? "—"),
+                     system?.batteryLevel != nil ? (system?.networkLabel ?? "") : "連線")
             }
         }
+    }
+    private func cell(_ tile: String, _ symbol: String, _ value: String, _ label: String) -> some View {
+        HStack(spacing: 8) {
+            Tile(name: tile, symbol: symbol, size: 30)
+            VStack(alignment: .leading, spacing: 0) {
+                Text(value).pf(15, .bold).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
+                Text(label).pf(10, .semibold).opacity(0.7).lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity)
     }
 }

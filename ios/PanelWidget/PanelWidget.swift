@@ -27,7 +27,7 @@ struct PanelProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<PanelEntry>) -> Void) {
         Task {
             let entries = await build(context: context, fetchWeather: true)
-            let refresh = Date().addingTimeInterval(30 * 60)
+            let refresh = Date().addingTimeInterval(15 * 60)
             completion(Timeline(entries: entries, policy: .after(refresh)))
         }
     }
@@ -47,13 +47,15 @@ struct PanelProvider: TimelineProvider {
         let activity = Shared.defaults.codable(ActivitySnapshot.self, forKey: Shared.Key.activity)
         let event = config.showCalendar ? CalendarService.nextEvent(from: now) : nil
         let timer = TimerState.load()
+        let system = config.showSystem ? await SystemStats.sample() : nil
+        if let system { Shared.defaults.set(codable: system, forKey: Shared.Key.system) }
         let background = UIImage(contentsOfFile: Shared.backgroundURL.path)
 
         var entries: [PanelEntry] = []
         for i in 0..<30 {
             let date = minute.addingTimeInterval(TimeInterval(i * 60))
             let data = PanelData(date: date, config: config, weather: weather, activity: activity,
-                                 event: event, timer: timer, background: background,
+                                 event: event, timer: timer, system: system, background: background,
                                  compact: compact)
             entries.append(PanelEntry(date: date, data: data))
         }

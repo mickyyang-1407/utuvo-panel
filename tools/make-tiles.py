@@ -13,7 +13,10 @@ extra=[("note","leaf.fill","2E7D32"),("gear","gearshape.fill","8E8E93"),
        # settings-screen row icons
        ("activity","figure.run","FF375F"),("timer","timer","FF9F0A"),("grid","square.grid.2x2.fill","5856D6"),
        ("location","location.fill","007AFF"),("health","heart.fill","FF2D55"),("wallpaper","photo.fill","30B0C7"),
-       ("seconds","clock.fill","1C1C1E"),("text","text.quote","FF9500"),("modules","slider.horizontal.3","8E8E93"),("home","apps.iphone","34C759")]
+       ("seconds","clock.fill","1C1C1E"),("text","text.quote","FF9500"),("modules","slider.horizontal.3","8E8E93"),("home","apps.iphone","34C759"),
+       # system row
+       ("cpu","cpu","5E5CE6"),("memory","memorychip","AF52DE"),("storage","internaldrive","8E8E93"),
+       ("wifi","wifi","007AFF"),("cellular","antenna.radiowaves.left.and.right","34C759"),("offline","wifi.slash","8E8E93")]
 tiles=[(i,s,c) for i,s,c in presets]+extra
 # round glass buttons (rendered on the watchOS "circles" platform) — gear, play, pause, stop
 circles=[("btn-gear","gearshape.fill","8E8E93"),("btn-play","play.fill","FF9F0A"),("btn-pause","pause.fill","FF9F0A"),("btn-stop","xmark","8E8E93")]
@@ -25,8 +28,12 @@ weather=[("wx-sun","sun.max.fill",day),("wx-moon-stars","moon.stars.fill",night)
          ("wx-rain","cloud.rain.fill","2F6BB0"),("wx-snow","cloud.snow.fill","7FA6D9"),("wx-heavyrain","cloud.heavyrain.fill","24528C"),
          ("wx-bolt","cloud.bolt.fill","3D3F8F"),("wx-bolt-rain","cloud.bolt.rain.fill","3D3F8F"),("wx-unknown","questionmark","6E7A8A")]
 POINTS=52; SCALE=3
-out=f"{ROOT}/ios/Shared/Tiles.xcassets"; shutil.rmtree(out,ignore_errors=True); os.makedirs(out)
+out=f"{ROOT}/ios/Shared/Tiles.xcassets"; os.makedirs(out,exist_ok=True)
 json.dump({"info":{"author":"xcode","version":1}},open(f"{out}/Contents.json","w"))
+# Only (re)generate ids passed on the command line; with no args, only ids whose imageset is missing.
+# The ChatGPT-rendered tiles (docs/tile-sources-chatgpt) live in the same catalog and must never be overwritten here.
+ONLY=set(sys.argv[1:])
+def wanted(name): return (name in ONLY) if ONLY else not os.path.isdir(f"{out}/{name}.imageset")
 tmp=tempfile.mkdtemp()
 # Hand-drawn, layered replicas in Apple's icon language (tools/tiles/*.svg). Each layer: (file, colour, scale, glass, translucency).
 WHITE="1.0,1.0,1.0"
@@ -60,6 +67,8 @@ def render_custom(id_,platform,points):
     print("custom",id_,os.path.getsize(png))
 
 def render(id_,symbol,hexc,platform,points):
+    name=id_ if id_.startswith(("btn-","wx-")) else f"tile-{id_}"
+    if not wanted(name): return
     if id_ in CUSTOM: return render_custom(id_,platform,points)
     r,g,b=[int(hexc[i:i+2],16)/255 for i in (0,2,4)]
     pkg=f"{tmp}/{id_}.icon"; shutil.rmtree(pkg,ignore_errors=True); os.makedirs(f"{pkg}/Assets")

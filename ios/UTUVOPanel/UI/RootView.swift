@@ -42,7 +42,7 @@ struct RootView: View {
                     Toggle(isOn: $model.config.showActivity) { Row("activity", "活動") }
                     Toggle(isOn: $model.config.showTimer) { Row("timer", "計時器") }
                     Toggle(isOn: $model.config.showLaunchers) { Row("grid", "常用 app") }
-                    Toggle(isOn: $model.config.showNote) { Row("note", "一句話") }
+                    Toggle(isOn: $model.config.showSystem) { Row("cpu", "系統（CPU／RAM／儲存／連線）") }
                 }
 
                 Section("內容") {
@@ -54,10 +54,6 @@ struct RootView: View {
                         Text("SF Mono").tag("mono")
                     } label: { Row("text", "字型") }
                     Stepper(value: $model.config.timerMinutes, in: 1...180) { Row("timer", "計時器 \(model.config.timerMinutes) 分鐘") }
-                    HStack(spacing: 12) {
-                        SettingsIcon("text")
-                        TextField("一句話", text: $model.config.note)
-                    }
                 }
 
                 Section {

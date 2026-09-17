@@ -49,6 +49,7 @@ final class PanelModel: NSObject, ObservableObject {
         d.background = background
         d.activity = activity ?? d.activity
         d.timer = TimerState.load()
+        d.system = Shared.defaults.codable(SystemSnapshot.self, forKey: Shared.Key.system) ?? d.system
         if config.city == nil { d.config.city = "Taipei" }
         return d
     }
