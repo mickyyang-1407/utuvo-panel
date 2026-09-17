@@ -174,3 +174,9 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
   新六顆磚先用管線版；ChatGPT prompt 在 PROMPT-tiles.md §6。
 - 天氣列：磚 44 pt｜狀態｜H/L 橫排；活動數字 18→26。
 - 測試 test1／test10 改走 sheet；test10 驗 Done 關閉。證據 `36`、`37`。真機已裝。
+
+## 09-17 11:00 第十四輪：列可點開 app、Messages 開主畫面
+
+- 行事曆列→`calshow://`、天氣列→`weather://`、活動列→`fitnessapp://`（新 preset「健身」），都經 container app 轉發（`open()` helper 包 Link）。
+- Messages preset `sms:`→`messages://`（開對話列表，不是新訊息）。Check 加兩條。
+- test11：點日曆列 → `com.apple.mobilecal` 前景，過。模擬器沒有天氣 app，天氣列只能真機驗。真機已裝。

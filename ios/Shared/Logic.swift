@@ -142,7 +142,7 @@ struct Launcher: Identifiable, Equatable {
 
     static let presets: [Launcher] = [
         Launcher(id: "music",     name: "音樂",     symbol: "music.note",          colorHex: 0xFC3C44, url: "music://"),
-        Launcher(id: "messages",  name: "訊息",     symbol: "message.fill",        colorHex: 0x34C759, url: "sms:"),
+        Launcher(id: "messages",  name: "訊息",     symbol: "message.fill",        colorHex: 0x34C759, url: "messages://"),
         Launcher(id: "maps",      name: "地圖",     symbol: "map.fill",            colorHex: 0x30B0C7, url: "maps://"),
         Launcher(id: "camera",    name: "相機",     symbol: "camera.fill",         colorHex: 0x8E8E93, url: "camera://"),
         Launcher(id: "notes",     name: "備忘錄",   symbol: "note.text",           colorHex: 0xFFCC00, url: "mobilenotes://"),
@@ -156,6 +156,7 @@ struct Launcher: Identifiable, Equatable {
         Launcher(id: "clock",     name: "時鐘",     symbol: "clock.fill",          colorHex: 0x1C1C1E, url: "clock-alarm://"),
         Launcher(id: "translate", name: "翻譯",     symbol: "character.bubble",    colorHex: 0x32ADE6, url: "translate://"),
         Launcher(id: "settings",  name: "設定",     symbol: "gearshape.fill",      colorHex: 0x8E8E93, url: "App-prefs://"),
+        Launcher(id: "fitness",   name: "健身",     symbol: "figure.run",          colorHex: 0xFF375F, url: "fitnessapp://"),
     ]
 
     static func byID(_ id: String) -> Launcher? { presets.first { $0.id == id } }

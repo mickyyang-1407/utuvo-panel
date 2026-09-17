@@ -273,3 +273,17 @@ extension WidgetFlowTests {
         XCTAssertFalse(done.exists, "Done closed the settings sheet")
     }
 }
+
+extension WidgetFlowTests {
+    /// 11. Tapping the calendar row opens the Calendar app (the simulator has no Weather app to test with).
+    func test11_calendarRowOpensCalendar() {
+        let w = scrollToWidget()
+        XCTAssertTrue(w.exists)
+        let f = w.frame
+        w.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: f.width * 0.6, dy: f.height * 0.22)).tap()
+        let cal = XCUIApplication(bundleIdentifier: "com.apple.mobilecal")
+        let ok = cal.wait(for: .runningForeground, timeout: 10)
+        sleep(1); snap("after-calendar-tap")
+        XCTAssertTrue(ok, "Calendar came to the foreground")
+    }
+}

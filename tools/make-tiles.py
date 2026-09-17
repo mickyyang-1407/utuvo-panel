@@ -18,7 +18,8 @@ extra=[("note","leaf.fill","2E7D32"),("gear","gearshape.fill","8E8E93"),
        ("cpu","cpu","5E5CE6"),("memory","memorychip","AF52DE"),("storage","internaldrive","8E8E93"),
        ("wifi","wifi","007AFF"),("cellular","antenna.radiowaves.left.and.right","34C759"),("offline","wifi.slash","8E8E93"),
        ("battery","battery.75percent","34C759"),("lowpower","bolt.fill","FF9F0A"),("thermal","thermometer.medium","FF3B30"),
-       ("uptime","hourglass","30B0C7"),("ip","globe","007AFF"),("memfree","memorychip","AF52DE")]
+       ("uptime","hourglass","30B0C7"),("ip","globe","007AFF"),("memfree","memorychip","AF52DE"),
+       ("fitness","figure.run","FF375F")]
 tiles=[(i,s,c) for i,s,c in presets]+extra
 # round glass buttons (rendered on the watchOS "circles" platform) — gear, play, pause, stop
 circles=[("btn-gear","gearshape.fill","8E8E93"),("btn-play","play.fill","FF9F0A"),("btn-pause","pause.fill","FF9F0A"),("btn-stop","xmark","8E8E93")]

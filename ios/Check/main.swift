@@ -19,6 +19,8 @@ do {
     check(Launcher.fromDeepLink(URL(string: "utuvopanel://open/music")!) == nil, "wrong host → nil")
     check(Set(Launcher.presets.map(\.id)).count == Launcher.presets.count, "preset ids unique")
     check(Launcher.presets.allSatisfy { URL(string: $0.url) != nil }, "every preset url parses")
+    check(Launcher.byID("messages")?.url == "messages://", "messages opens the app, not a new message")
+    check(["calendar","weather","fitness"].allSatisfy { Launcher.byID($0) != nil }, "rows that open apps have presets")
     check(Launcher.settingsDeepLink.absoluteString == "utuvopanel://settings", "settings link")
     check(Launcher.fromDeepLink(Launcher.settingsDeepLink) == nil, "settings link is not a launcher")
 }

@@ -1091,6 +1091,16 @@
           }
         }
       }
+    },
+    "健身": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fitness"
+          }
+        }
+      }
     }
   }
 }

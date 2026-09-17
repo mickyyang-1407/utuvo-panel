@@ -66,13 +66,19 @@ struct PanelView: View {
             .modifier(BackgroundModifier(image: data.background, tint: data.config.tint, inWidget: inWidget, accented: accented))
     }
 
+    /// Wrap a row in a Link to a launcher's deep link (the app forwards to the real URL scheme).
+    @ViewBuilder private func open<V: View>(_ id: String, @ViewBuilder _ row: () -> V) -> some View {
+        if let l = Launcher.byID(id) { Link(destination: l.deepLink) { row() } } else { row() }
+    }
+
     @ViewBuilder private var content: some View {
         VStack(spacing: rowSpacing) {
             HeaderRow(date: data.date, showSeconds: data.config.showSeconds).frame(height: 84)
-            if data.config.showCalendar { CalendarRow(date: data.date, event: data.event).frame(height: 68) }
-            if data.config.showWeather { WeatherRow(weather: data.weather, city: data.config.city).frame(height: 92) }
+            // Rows that stand for an app open that app (via the container-app hand-off, like the launcher tiles).
+            if data.config.showCalendar { open("calendar") { CalendarRow(date: data.date, event: data.event) }.frame(height: 68) }
+            if data.config.showWeather { open("weather") { WeatherRow(weather: data.weather, city: data.config.city) }.frame(height: 92) }
             if !data.compact {
-                if data.config.showActivity { ActivityRow(activity: data.activity).frame(height: 68) }
+                if data.config.showActivity { open("fitness") { ActivityRow(activity: data.activity) }.frame(height: 68) }
                 if data.config.showTimer { TimerRow(timer: data.timer, now: data.date, defaultMinutes: data.config.timerMinutes).frame(height: 58) }
             }
             if data.config.showLaunchers { LauncherRow(ids: data.config.launcherIDs).frame(height: 68) }
