@@ -32,7 +32,6 @@ struct SystemSnapshot: Codable, Equatable {
         case "battery":  return (batteryLevel.map { "\(Int($0 * 100))%" } ?? "—", m.name, m.tile, m.symbol)
         case "lowpower": return (lowPower ? String(localized: "開") : String(localized: "關"), m.name, m.tile, m.symbol)
         case "thermal":  return (SystemSnapshot.thermalLabel(thermal), m.name, m.tile, m.symbol)
-        case "uptime":   return (SystemSnapshot.uptimeLabel(uptime), m.name, m.tile, m.symbol)
         case "ip":       return (ip ?? "—", m.name, m.tile, m.symbol)
         default:         return ("—", m.name, m.tile, m.symbol)
         }
@@ -90,7 +89,7 @@ enum SystemStats {
         return SystemSnapshot(cpuPercent: cpu, memoryUsedBytes: memUsed, memoryTotalBytes: memTotal,
                               diskFreeBytes: diskFree, diskTotalBytes: diskTotal, network: net,
                               batteryLevel: level >= 0 ? Double(level) : nil,
-                              lowPower: pi.isLowPowerModeEnabled, thermal: thermal, uptime: pi.systemUptime,
+                              lowPower: pi.isLowPowerModeEnabled, thermal: thermal, uptime: 0,
                               ip: ipv4Address(), sampled: Date())
     }
 

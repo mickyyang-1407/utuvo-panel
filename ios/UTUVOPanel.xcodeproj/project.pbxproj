@@ -21,11 +21,13 @@
 		78397D03783048580D7870AE /* Logic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3E69F7EC92364B196BB7EE /* Logic.swift */; };
 		810EAB9FBD1812159E094E24 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = EDD6FC426B20EFADB4731D9C /* Localizable.xcstrings */; };
 		9DA5883F15DE9EBA66C67358 /* UTUVOPanelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576EC5F7D63B9C721A13DDAB /* UTUVOPanelApp.swift */; };
+		9FE4C4114E16BE7EAF016C15 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D62E4DC75EE413732C481F96 /* PrivacyInfo.xcprivacy */; };
 		C62778DDF8FCBAF40074C6F8 /* Intents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A1B5D6B3F3A6F5A3ACF5E2C /* Intents.swift */; };
 		C66DC46A12A79B30B76561EB /* AlignView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B78A9CFD368972E867FDAB /* AlignView.swift */; };
 		D204CAEE67528266B8C19753 /* PanelWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86D5CF2ED569864D7073A9D /* PanelWidget.swift */; };
 		DCAF36B3B05904914012C1FC /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AC22E5A135D41E8B89C4A9 /* PanelView.swift */; };
 		DE0836E2D424FF1B37B7F458 /* WidgetFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B6F8ACFBEE32035C799CC97 /* WidgetFlowTests.swift */; };
+		F4090AAF58FB02EF16C13D6F /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D62E4DC75EE413732C481F96 /* PrivacyInfo.xcprivacy */; };
 		FC0809D43FC30A5F58E172EE /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = EDD6FC426B20EFADB4731D9C /* Localizable.xcstrings */; };
 		FCDF771CD0B3628587458751 /* Tiles.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 79C57387C9E4A2A9052B4ADB /* Tiles.xcassets */; };
 /* End PBXBuildFile section */
@@ -80,6 +82,7 @@
 		A288DFE1F448A8EDFDA311B3 /* UTUVOPanel.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = UTUVOPanel.icon; sourceTree = "<group>"; };
 		B081956EAACDE0F2660E19FF /* UTUVOPanel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UTUVOPanel.entitlements; sourceTree = "<group>"; };
 		B86D5CF2ED569864D7073A9D /* PanelWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelWidget.swift; sourceTree = "<group>"; };
+		D62E4DC75EE413732C481F96 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E688E69FF42BBD585BB4CC03 /* PanelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanelModel.swift; sourceTree = "<group>"; };
 		EDD6FC426B20EFADB4731D9C /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		EF8E301445BD33408B7022C2 /* PanelWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PanelWidget.entitlements; sourceTree = "<group>"; };
@@ -114,6 +117,7 @@
 				EDD6FC426B20EFADB4731D9C /* Localizable.xcstrings */,
 				4A3E69F7EC92364B196BB7EE /* Logic.swift */,
 				19AC22E5A135D41E8B89C4A9 /* PanelView.swift */,
+				D62E4DC75EE413732C481F96 /* PrivacyInfo.xcprivacy */,
 				17F270C790FB75846AD96C78 /* SystemStats.swift */,
 				79C57387C9E4A2A9052B4ADB /* Tiles.xcassets */,
 			);
@@ -289,6 +293,7 @@
 			files = (
 				4A82DDC2E035B90AC54EDA05 /* Assets.xcassets in Resources */,
 				810EAB9FBD1812159E094E24 /* Localizable.xcstrings in Resources */,
+				9FE4C4114E16BE7EAF016C15 /* PrivacyInfo.xcprivacy in Resources */,
 				FCDF771CD0B3628587458751 /* Tiles.xcassets in Resources */,
 				4FE39D2BA7EA4F6A6323F222 /* UTUVOPanel.icon in Resources */,
 			);
@@ -299,6 +304,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FC0809D43FC30A5F58E172EE /* Localizable.xcstrings in Resources */,
+				F4090AAF58FB02EF16C13D6F /* PrivacyInfo.xcprivacy in Resources */,
 				46DB2B05F21FAC485C629A9A /* Tiles.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -452,7 +458,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.panel;
 				PRODUCT_NAME = UTUVOPanel;
 				SDKROOT = iphoneos;
@@ -471,7 +477,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.panel.widget;
 				PRODUCT_NAME = PanelWidget;
 				SDKROOT = iphoneos;
@@ -492,7 +498,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.panel;
 				PRODUCT_NAME = UTUVOPanel;
 				SDKROOT = iphoneos;
@@ -570,7 +576,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.panel.widget;
 				PRODUCT_NAME = PanelWidget;
 				SDKROOT = iphoneos;

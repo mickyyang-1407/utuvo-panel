@@ -25,12 +25,14 @@
 			<string>com.utuvo.panel</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>glasspanel</string>
+				<string>utuvopanel</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>面板要顯示你接下來的行程。</string>
 	<key>NSHealthShareUsageDescription</key>

@@ -125,7 +125,6 @@ struct SystemMetric: Identifiable, Equatable {
         SystemMetric(id: "battery",  name: "電量",      tile: "tile-battery",  symbol: "battery.75percent"),
         SystemMetric(id: "lowpower", name: "低耗電",    tile: "tile-lowpower", symbol: "bolt.fill"),
         SystemMetric(id: "thermal",  name: "溫度",      tile: "tile-thermal",  symbol: "thermometer.medium"),
-        SystemMetric(id: "uptime",   name: "開機時間",   tile: "tile-uptime",   symbol: "hourglass"),
         SystemMetric(id: "ip",       name: "IP",        tile: "tile-ip",       symbol: "globe"),
     ]
     static func byID(_ id: String) -> SystemMetric? { all.first { $0.id == id } }
@@ -155,7 +154,6 @@ struct Launcher: Identifiable, Equatable {
         Launcher(id: "weather",   name: "天氣",     symbol: "cloud.sun.fill",      colorHex: 0x5AC8FA, url: "weather://"),
         Launcher(id: "clock",     name: "時鐘",     symbol: "clock.fill",          colorHex: 0x1C1C1E, url: "clock-alarm://"),
         Launcher(id: "translate", name: "翻譯",     symbol: "character.bubble",    colorHex: 0x32ADE6, url: "translate://"),
-        Launcher(id: "settings",  name: "設定",     symbol: "gearshape.fill",      colorHex: 0x8E8E93, url: "App-prefs://"),
         Launcher(id: "fitness",   name: "健身",     symbol: "figure.run",          colorHex: 0xFF375F, url: "fitnessapp://"),
     ]
 
@@ -190,8 +188,8 @@ struct WeatherSnapshot: Codable, Equatable {
     static func url(latitude: Double, longitude: Double) -> URL {
         var c = URLComponents(string: "https://api.open-meteo.com/v1/forecast")!
         c.queryItems = [
-            .init(name: "latitude", value: String(format: "%.4f", latitude)),
-            .init(name: "longitude", value: String(format: "%.4f", longitude)),
+            .init(name: "latitude", value: String(format: "%.2f", latitude)),
+            .init(name: "longitude", value: String(format: "%.2f", longitude)),
             .init(name: "current", value: "temperature_2m,weather_code,is_day"),
             .init(name: "daily", value: "temperature_2m_max,temperature_2m_min"),
             .init(name: "forecast_days", value: "1"),

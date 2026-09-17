@@ -46,7 +46,9 @@ do {
     check(symbols.allSatisfy { WeatherSnapshot.tileName(for: $0) != "wx-unknown" }, "all WMO symbols map to a tile: \(symbols.filter { WeatherSnapshot.tileName(for: $0) == "wx-unknown" })")
     check(WeatherSnapshot.tileName(for: "nope") == "wx-unknown", "unknown symbol → wx-unknown")
     let u = WeatherSnapshot.url(latitude: 25.033, longitude: 121.565).absoluteString
-    check(u.contains("latitude=25.0330") && u.contains("longitude=121.5650") && u.contains("timezone=auto"), "url query")
+    check(u.contains("latitude=25.03&") && u.contains("longitude=121.5") && !u.contains("25.033") && u.contains("timezone=auto"), "url query is coarse (2 dp ≈ 1 km)")
+    check(Launcher.byID("settings") == nil, "no App-prefs launcher (App Review)")
+    check(SystemMetric.byID("uptime") == nil, "no uptime metric (boot-time API has no display reason)")
 }
 
 // MARK: Timer state machine

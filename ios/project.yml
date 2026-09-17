@@ -37,13 +37,14 @@ targets:
         NSHealthUpdateUsageDescription: "不會寫入任何健康資料。"
         CFBundleURLTypes:
           - CFBundleURLName: com.utuvo.panel
-            CFBundleURLSchemes: [glasspanel]
+            CFBundleURLSchemes: [utuvopanel]
+        ITSAppUsesNonExemptEncryption: false
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.panel
         PRODUCT_NAME: UTUVOPanel
         ASSETCATALOG_COMPILER_APPICON_NAME: UTUVOPanel
-        MARKETING_VERSION: "0.1"
+        MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
   PanelWidget:
     type: app-extension
@@ -66,7 +67,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.panel.widget
         PRODUCT_NAME: PanelWidget
-        MARKETING_VERSION: "0.1"
+        MARKETING_VERSION: "1.0"
         CURRENT_PROJECT_VERSION: "1"
         SKIP_INSTALL: "YES"
   UTUVOPanelUITests:
