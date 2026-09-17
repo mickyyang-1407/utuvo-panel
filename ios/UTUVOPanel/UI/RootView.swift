@@ -1,21 +1,42 @@
 import SwiftUI
 import PhotosUI
 
+/// Home: just the panel preview. Settings live in a sheet so "完成" really closes them.
 struct RootView: View {
     @EnvironmentObject private var model: PanelModel
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                PreviewCard().padding(.horizontal, 16).padding(.top, 8)
+                Text("小工具會在下一次更新時套用這裡的設定。").font(.footnote).foregroundStyle(.secondary).padding(.top, 8)
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle("UTUVO Panel")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button { model.showSettings = true } label: { Label("設定", systemImage: "gearshape") }
+                }
+            }
+            .sheet(isPresented: $model.showSettings) {
+                SettingsView().environmentObject(model)
+            }
+            .task {
+                await model.refreshHealth()
+                model.refreshStatuses()
+            }
+        }
+    }
+}
+
+struct SettingsView: View {
+    @EnvironmentObject private var model: PanelModel
+    @Environment(\.dismiss) private var dismiss
     @State private var screenshotItem: PhotosPickerItem?
-    @State private var showPicker = false
-    @State private var applied = false
 
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    PreviewCard()
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                }
-
                 Section {
                     PhotosPicker(selection: $screenshotItem, matching: .images) {
                         if model.screenshot == nil { Row("wallpaper", "選你的桌布（原圖或空桌面截圖）") } else { Row("wallpaper", "換桌布") }
@@ -47,7 +68,7 @@ struct RootView: View {
                     Toggle(isOn: $model.config.showActivity) { Row("activity", "活動") }
                     Toggle(isOn: $model.config.showTimer) { Row("timer", "計時器") }
                     Toggle(isOn: $model.config.showLaunchers) { Row("grid", "常用 app") }
-                    Toggle(isOn: $model.config.showSystem) { Row("cpu", "系統（CPU／RAM／儲存／連線）") }
+                    Toggle(isOn: $model.config.showSystem) { Row("cpu", "系統資訊") }
                 }
 
                 Section("內容") {
@@ -62,15 +83,24 @@ struct RootView: View {
                 }
 
                 Section {
-                    NavigationLink {
-                        LauncherPicker()
-                    } label: {
+                    NavigationLink { LauncherPicker() } label: {
                         HStack {
                             Row("grid", "常用 app")
                             Spacer()
                             HStack(spacing: 4) {
                                 ForEach(model.config.launcherIDs.prefix(5).compactMap(Launcher.byID)) { l in
                                     Image("tile-\(l.id)").resizable().interpolation(.high).frame(width: 22, height: 22)
+                                }
+                            }
+                        }
+                    }
+                    NavigationLink { SystemMetricPicker() } label: {
+                        HStack {
+                            Row("cpu", "系統資訊")
+                            Spacer()
+                            HStack(spacing: 4) {
+                                ForEach(model.config.systemMetrics.prefix(4).compactMap(SystemMetric.byID)) { m in
+                                    Image(m.tile).resizable().interpolation(.high).frame(width: 22, height: 22)
                                 }
                             }
                         }
@@ -95,24 +125,14 @@ struct RootView: View {
                     .font(.subheadline)
                 }
             }
-            .navigationTitle("UTUVO Panel")
+            .navigationTitle("設定")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") {
                         model.reloadWidget()
-                        withAnimation { applied = true }
-                        Task { try? await Task.sleep(for: .seconds(1.6)); withAnimation { applied = false } }
+                        dismiss()
                     }
-                }
-            }
-            .overlay(alignment: .bottom) {
-                if applied {
-                    Label("已套用到面板", systemImage: "checkmark.circle.fill")
-                        .font(.subheadline.weight(.semibold))
-                        .padding(.horizontal, 16).padding(.vertical, 10)
-                        .glassEffect()
-                        .padding(.bottom, 24)
-                        .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .onChange(of: screenshotItem) { _, item in
@@ -121,10 +141,6 @@ struct RootView: View {
                     if let data = try? await item.loadTransferable(type: Data.self) { model.setScreenshot(data) }
                     screenshotItem = nil
                 }
-            }
-            .task {
-                await model.refreshHealth()
-                model.refreshStatuses()
             }
         }
     }
@@ -167,22 +183,18 @@ private struct PreviewCard: View {
     }
 }
 
-// MARK: - Launcher picker (max 5)
+// MARK: - Pickers (max 5 launchers, max 4 metrics)
 
 private struct LauncherPicker: View {
     @EnvironmentObject private var model: PanelModel
-
     var body: some View {
         List {
             Section {
                 ForEach(Launcher.presets) { l in
                     let picked = model.config.launcherIDs.contains(l.id)
                     Button {
-                        if picked {
-                            model.config.launcherIDs.removeAll { $0 == l.id }
-                        } else if model.config.launcherIDs.count < 5 {
-                            model.config.launcherIDs.append(l.id)
-                        }
+                        if picked { model.config.launcherIDs.removeAll { $0 == l.id } }
+                        else if model.config.launcherIDs.count < 5 { model.config.launcherIDs.append(l.id) }
                     } label: {
                         HStack(spacing: 12) {
                             Image("tile-\(l.id)").resizable().interpolation(.high).frame(width: 30, height: 30)
@@ -200,6 +212,32 @@ private struct LauncherPicker: View {
     }
 }
 
+private struct SystemMetricPicker: View {
+    @EnvironmentObject private var model: PanelModel
+    var body: some View {
+        List {
+            Section {
+                ForEach(SystemMetric.all) { m in
+                    let picked = model.config.systemMetrics.contains(m.id)
+                    Button {
+                        if picked { model.config.systemMetrics.removeAll { $0 == m.id } }
+                        else if model.config.systemMetrics.count < 4 { model.config.systemMetrics.append(m.id) }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(m.tile).resizable().interpolation(.high).frame(width: 30, height: 30)
+                            Text(LocalizedStringKey(m.name)).foregroundStyle(.primary)
+                            Spacer()
+                            if picked { Image(systemName: "checkmark").foregroundStyle(.tint) }
+                        }
+                    }
+                }
+            } footer: {
+                Text("最多四個，照點選順序排列。已選 \(model.config.systemMetrics.count)／4。數字是每 15 分鐘的快照；iOS 不讓 app 切換 Wi-Fi 或藍牙。")
+            }
+        }
+        .navigationTitle("系統資訊")
+    }
+}
 
 // MARK: - Settings-style rows (icon tiles rendered by tools/make-tiles.py, same Liquid Glass as the Home Screen)
 

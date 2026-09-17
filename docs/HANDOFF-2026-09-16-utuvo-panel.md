@@ -164,3 +164,13 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
   sim（英文）實拍 `32`、`33`；其他語言退回繁中。
 - icon 改 **深底發光**（solid 0.08/0.09/0.12 底＋mark 0.45/0.68/1.0 玻璃、translucency 0.6、refractivity）——Micky 說照我建議；`34`。
 - 真機已裝。
+
+## 09-17 09:50 第十三輪：設定改 sheet、啟動列直轉、系統資訊可選、天氣橫排、活動數字放大
+
+- App 結構：`RootView`＝面板預覽＋右上齒輪；`SettingsView` 是 sheet，「完成」＝reload widget＋dismiss（真的關掉）。
+  齒輪 deep link `utuvopanel://settings` 直接開 sheet；launcher deep link 進來不顯示任何 UI 直接 `open(target)`（中轉那一下是 iOS 硬限制）。
+- 系統資訊可選四格：`SystemMetric.all` 11 項（cpu／ram／memfree／storage／used／network／battery／lowpower／thermal／uptime／ip），
+  `PanelConfig.systemMetrics`；新讀數在 `SystemStats`（ProcessInfo 低耗電／熱狀態／開機時間、getifaddrs IPv4）。
+  新六顆磚先用管線版；ChatGPT prompt 在 PROMPT-tiles.md §6。
+- 天氣列：磚 44 pt｜狀態｜H/L 橫排；活動數字 18→26。
+- 測試 test1／test10 改走 sheet；test10 驗 Done 關閉。證據 `36`、`37`。真機已裝。

@@ -54,6 +54,8 @@ struct PanelConfig: Codable, Equatable {
     var showLaunchers = true
     var showNote = false      // retired row, kept so old configs decode
     var showSystem = true
+    /// Up to four ids from SystemMetric.all, in display order.
+    var systemMetrics: [String] = ["cpu", "ram", "storage", "network"]
 
     var note = ""
     /// Clock shows a live seconds counter instead of hh:mm.
@@ -85,6 +87,7 @@ struct PanelConfig: Codable, Equatable {
         showLaunchers = try c.decodeIfPresent(Bool.self, forKey: .showLaunchers) ?? d.showLaunchers
         showNote = try c.decodeIfPresent(Bool.self, forKey: .showNote) ?? d.showNote
         showSystem = try c.decodeIfPresent(Bool.self, forKey: .showSystem) ?? d.showSystem
+        systemMetrics = try c.decodeIfPresent([String].self, forKey: .systemMetrics) ?? d.systemMetrics
         note = try c.decodeIfPresent(String.self, forKey: .note) ?? d.note
         showSeconds = try c.decodeIfPresent(Bool.self, forKey: .showSeconds) ?? d.showSeconds
         fontDesign = try c.decodeIfPresent(String.self, forKey: .fontDesign) ?? d.fontDesign
@@ -103,6 +106,29 @@ struct PanelConfig: Codable, Equatable {
     func save() {
         Shared.defaults.set(codable: self, forKey: Shared.Key.config)
     }
+}
+
+// MARK: - System metrics (what the system row can show)
+
+struct SystemMetric: Identifiable, Equatable {
+    let id: String
+    let name: String      // localization key
+    let tile: String
+    let symbol: String
+    static let all: [SystemMetric] = [
+        SystemMetric(id: "cpu",      name: "CPU",       tile: "tile-cpu",      symbol: "cpu"),
+        SystemMetric(id: "ram",      name: "RAM",       tile: "tile-memory",   symbol: "memorychip"),
+        SystemMetric(id: "memfree",  name: "可用記憶體", tile: "tile-memfree",  symbol: "memorychip"),
+        SystemMetric(id: "storage",  name: "可用空間",   tile: "tile-storage",  symbol: "internaldrive"),
+        SystemMetric(id: "used",     name: "已用空間",   tile: "tile-storage",  symbol: "internaldrive"),
+        SystemMetric(id: "network",  name: "連線",      tile: "tile-wifi",     symbol: "wifi"),
+        SystemMetric(id: "battery",  name: "電量",      tile: "tile-battery",  symbol: "battery.75percent"),
+        SystemMetric(id: "lowpower", name: "低耗電",    tile: "tile-lowpower", symbol: "bolt.fill"),
+        SystemMetric(id: "thermal",  name: "溫度",      tile: "tile-thermal",  symbol: "thermometer.medium"),
+        SystemMetric(id: "uptime",   name: "開機時間",   tile: "tile-uptime",   symbol: "hourglass"),
+        SystemMetric(id: "ip",       name: "IP",        tile: "tile-ip",       symbol: "globe"),
+    ]
+    static func byID(_ id: String) -> SystemMetric? { all.first { $0.id == id } }
 }
 
 // MARK: - Launchers

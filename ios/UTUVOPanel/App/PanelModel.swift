@@ -16,6 +16,8 @@ final class PanelModel: NSObject, ObservableObject {
     @Published private(set) var screenshot: UIImage?
     @Published private(set) var background: UIImage?
     @Published private(set) var activity: ActivitySnapshot?
+    /// Settings sheet; the widget's gear deep link opens it directly.
+    @Published var showSettings = false
 
     @Published private(set) var calendarStatus = "未詢問"
     @Published private(set) var locationStatus = "未詢問"

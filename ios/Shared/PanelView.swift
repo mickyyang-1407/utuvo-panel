@@ -76,7 +76,7 @@ struct PanelView: View {
                 if data.config.showTimer { TimerRow(timer: data.timer, now: data.date, defaultMinutes: data.config.timerMinutes).frame(height: 58) }
             }
             if data.config.showLaunchers { LauncherRow(ids: data.config.launcherIDs).frame(height: 68) }
-            if !data.compact, data.config.showSystem { SystemRow(system: data.system).frame(height: 62) }
+            if !data.compact, data.config.showSystem { SystemRow(system: data.system, metrics: data.config.systemMetrics).frame(height: 62) }
             Spacer(minLength: 0)
         }
         .foregroundStyle(.white)
@@ -302,15 +302,18 @@ private struct WeatherRow: View {
                         .monospacedDigit()
                         .widgetAccentable()
                 }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    let d: (symbol: String, text: String) = weather?.description ?? (symbol: "cloud.fill", text: "—")
-                    Tile(name: WeatherSnapshot.tileName(for: d.symbol), symbol: d.symbol, size: 40)
-                    Text(LocalizedStringKey(d.text)).pf(15, .semibold)
-                    if let w = weather {
-                        HStack(spacing: 4) {
-                            Text("\(Int(w.high.rounded()))°").pf(14, .semibold)
-                            Text("\(Int(w.low.rounded()))°").pf(14, .semibold).opacity(0.6)
+                Spacer(minLength: 8)
+                let d: (symbol: String, text: String) = weather?.description ?? (symbol: "cloud.fill", text: "—")
+                HStack(spacing: 10) {
+                    Tile(name: WeatherSnapshot.tileName(for: d.symbol), symbol: d.symbol, size: 44)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(LocalizedStringKey(d.text)).pf(17, .semibold).lineLimit(1).minimumScaleFactor(0.7)
+                        if let w = weather {
+                            HStack(spacing: 6) {
+                                Text("H \(Int(w.high.rounded()))°").pf(14, .semibold)
+                                Text("L \(Int(w.low.rounded()))°").pf(14, .semibold).opacity(0.6)
+                            }
+                            .monospacedDigit()
                         }
                     }
                 }
@@ -323,7 +326,7 @@ private struct ActivityRow: View {
     let activity: ActivitySnapshot?
     var body: some View {
         Card {
-            HStack(alignment: .center, spacing: 18) {
+            HStack(alignment: .center, spacing: 22) {
                 stat("步數", Color(hex: 0xFF375F), activity.map { "\($0.steps)" } ?? "—", "")
                 stat("運動", Color(hex: 0xA8FF3E), activity.map { "\($0.exerciseMinutes)" } ?? "—", "min")
                 stat("站立", Color(hex: 0x28E5FF), activity.map { "\($0.standHours)" } ?? "—", "hr")
@@ -334,10 +337,10 @@ private struct ActivityRow: View {
     }
     private func stat(_ label: LocalizedStringKey, _ color: Color, _ value: String, _ unit: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(label).pf(11, .semibold).foregroundStyle(color).widgetAccentable()
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text(value).pf(18, .bold).monospacedDigit()
-                if !unit.isEmpty { Text(unit).pf(12, .semibold).opacity(0.8) }
+            Text(label).pf(12, .semibold).foregroundStyle(color).widgetAccentable()
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(value).pf(26, .bold).monospacedDigit().lineLimit(1).minimumScaleFactor(0.6)
+                if !unit.isEmpty { Text(unit).pf(13, .semibold).opacity(0.8) }
             }
         }
     }
@@ -454,17 +457,20 @@ private struct Tile: View {
 
 private struct SystemRow: View {
     let system: SystemSnapshot?
+    let metrics: [String]
     var body: some View {
         Card {
             HStack(spacing: 0) {
-                cell("tile-cpu", "cpu", system.map { "\(Int($0.cpuPercent.rounded()))%" } ?? "—", "CPU")
-                cell("tile-memory", "memorychip", system.map { SystemSnapshot.gb($0.memoryUsedBytes) } ?? "—", "RAM")
-                cell("tile-storage", "internaldrive", system.map { SystemSnapshot.gb($0.diskFreeBytes) } ?? "—", "可用")
-                cell(system?.networkTile ?? "tile-offline", system?.networkSymbol ?? "wifi.slash",
-                     system.flatMap { s in s.batteryLevel.map { "\(Int($0 * 100))%" } } ?? (system?.networkLabel ?? "—"),
-                     system?.batteryLevel != nil ? LocalizedStringKey(system?.networkLabel ?? "") : "連線")
+                ForEach(metrics.prefix(4).map { $0 }, id: \.self) { id in
+                    metricCell(id)
+                }
             }
         }
+    }
+    private func metricCell(_ id: String) -> some View {
+        let m: SystemMetric = SystemMetric.byID(id) ?? SystemMetric.all[0]
+        let c: (value: String, label: String, tile: String, symbol: String) = system?.cell(for: id) ?? (value: "—", label: m.name, tile: m.tile, symbol: m.symbol)
+        return cell(c.tile, c.symbol, c.value, LocalizedStringKey(c.label))
     }
     private func cell(_ tile: String, _ symbol: String, _ value: String, _ label: LocalizedStringKey) -> some View {
         HStack(spacing: 6) {

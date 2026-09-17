@@ -13,7 +13,37 @@ struct SystemSnapshot: Codable, Equatable {
     var diskTotalBytes: UInt64
     var network: String             // "wifi" | "cellular" | "wired" | "none"
     var batteryLevel: Double?       // 0…1, nil when the extension cannot read it
+    var lowPower: Bool = false
+    var thermal: String = "nominal" // nominal | fair | serious | critical
+    var uptime: TimeInterval = 0
+    var ip: String? = nil
     var sampled: Date
+
+    /// One cell of the system row: (value, label key, tile, fallback symbol).
+    func cell(for id: String) -> (value: String, label: String, tile: String, symbol: String) {
+        let m = SystemMetric.byID(id) ?? SystemMetric.all[0]
+        switch id {
+        case "cpu":      return ("\(Int(cpuPercent.rounded()))%", m.name, m.tile, m.symbol)
+        case "ram":      return (SystemSnapshot.gb(memoryUsedBytes), m.name, m.tile, m.symbol)
+        case "memfree":  return (SystemSnapshot.gb(memoryTotalBytes > memoryUsedBytes ? memoryTotalBytes - memoryUsedBytes : 0), m.name, m.tile, m.symbol)
+        case "storage":  return (SystemSnapshot.gb(diskFreeBytes), m.name, m.tile, m.symbol)
+        case "used":     return (SystemSnapshot.gb(diskTotalBytes > diskFreeBytes ? diskTotalBytes - diskFreeBytes : 0), m.name, m.tile, m.symbol)
+        case "network":  return (networkLabel, m.name, networkTile, networkSymbol)
+        case "battery":  return (batteryLevel.map { "\(Int($0 * 100))%" } ?? "—", m.name, m.tile, m.symbol)
+        case "lowpower": return (lowPower ? String(localized: "開") : String(localized: "關"), m.name, m.tile, m.symbol)
+        case "thermal":  return (SystemSnapshot.thermalLabel(thermal), m.name, m.tile, m.symbol)
+        case "uptime":   return (SystemSnapshot.uptimeLabel(uptime), m.name, m.tile, m.symbol)
+        case "ip":       return (ip ?? "—", m.name, m.tile, m.symbol)
+        default:         return ("—", m.name, m.tile, m.symbol)
+        }
+    }
+    static func thermalLabel(_ t: String) -> String {
+        switch t { case "fair": return String(localized: "偏熱"); case "serious": return String(localized: "過熱"); case "critical": return String(localized: "危險"); default: return String(localized: "正常") }
+    }
+    static func uptimeLabel(_ s: TimeInterval) -> String {
+        let h = Int(s) / 3600, d = h / 24
+        return d > 0 ? "\(d)d \(h % 24)h" : "\(h)h \((Int(s) % 3600) / 60)m"
+    }
 
     /// Compact size with its own unit: 3.1G / 118G / 10.5T.
     static func gb(_ bytes: UInt64) -> String {
@@ -54,9 +84,34 @@ enum SystemStats {
         let net = await networkKind()
         UIDevice.current.isBatteryMonitoringEnabled = true
         let level = UIDevice.current.batteryLevel
+        let pi = ProcessInfo.processInfo
+        let thermal: String
+        switch pi.thermalState { case .fair: thermal = "fair"; case .serious: thermal = "serious"; case .critical: thermal = "critical"; default: thermal = "nominal" }
         return SystemSnapshot(cpuPercent: cpu, memoryUsedBytes: memUsed, memoryTotalBytes: memTotal,
                               diskFreeBytes: diskFree, diskTotalBytes: diskTotal, network: net,
-                              batteryLevel: level >= 0 ? Double(level) : nil, sampled: Date())
+                              batteryLevel: level >= 0 ? Double(level) : nil,
+                              lowPower: pi.isLowPowerModeEnabled, thermal: thermal, uptime: pi.systemUptime,
+                              ip: ipv4Address(), sampled: Date())
+    }
+
+    /// First non-loopback IPv4 (Wi-Fi en0 preferred).
+    private static func ipv4Address() -> String? {
+        var addrs: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&addrs) == 0, let first = addrs else { return nil }
+        defer { freeifaddrs(addrs) }
+        var found: [String: String] = [:]
+        var p: UnsafeMutablePointer<ifaddrs>? = first
+        while let a = p {
+            let flags = Int32(a.pointee.ifa_flags)
+            if let sa = a.pointee.ifa_addr, sa.pointee.sa_family == UInt8(AF_INET), (flags & IFF_LOOPBACK) == 0, (flags & IFF_UP) != 0 {
+                var host = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                if getnameinfo(sa, socklen_t(sa.pointee.sa_len), &host, socklen_t(host.count), nil, 0, NI_NUMERICHOST) == 0 {
+                    found[String(cString: a.pointee.ifa_name)] = String(cString: host)
+                }
+            }
+            p = a.pointee.ifa_next
+        }
+        return found["en0"] ?? found["pdp_ip0"] ?? found.values.first
     }
 
     private struct Ticks { var user, system, nice, idle: UInt64 }
