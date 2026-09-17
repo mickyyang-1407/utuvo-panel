@@ -34,4 +34,4 @@ Requires Xcode 27 and an iOS 27 simulator or device.
 
 ## Licence
 
-Code: MIT. Brand mark and tile artwork: all rights reserved — see `LICENSE`.
+Code: MIT (`LICENSE`). Brand mark and tile artwork: all rights reserved — see `ASSETS-LICENSE.md`.
