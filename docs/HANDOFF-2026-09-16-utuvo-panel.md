@@ -148,3 +148,9 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - `make-tiles.py` 改成**只產缺的或指定的 id**，不再整個 catalog 重建（ChatGPT 磚不會被蓋）。系統列六顆磚先用管線版，
   要高質感再請 ChatGPT 畫：cpu／memory／storage／wifi／cellular／offline。
 - 證據 `29-system-row.png`。真機已裝。
+
+## 09-17 08:45 第十一輪：系統列六磚＋綠葉換 ChatGPT 圖（05.png）
+
+- 面板上**所有磚／鈕／天氣**現在都是 ChatGPT 渲染（來源 `docs/tile-sources-chatgpt/01–05`），管線只剩設定頁列 icon。
+- 證據 `31-panel-final-tiles.png`。真機已裝（`da2d497`）。
+- 剩下的：App icon 顏色（Micky 要談）、真機看透明對齊、要不要開 repo。
