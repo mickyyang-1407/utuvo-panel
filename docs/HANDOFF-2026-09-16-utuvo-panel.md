@@ -224,3 +224,13 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
   （API display type 用 `APP_IPHONE_67`，1320×2868 照收；`APP_IPHONE_69` 不存在）。
 - 截圖來源：Pro Max sim `UTUVO-Panel-Screenshots-17-Pro-Max`（`6E56E659-…`）跑 test4／5／10 的附件。
 - 🔴 **App Privacy（資料收集問卷）公開 API 沒有**——只能網頁填：Coarse Location／App Functionality／不連結／不追蹤，其他 No。這是提交前唯一卡點。
+
+## 09-17 12:45 第十九輪：build 2（iPhone-only）
+
+- 提交時被擋 `SCREENSHOT_REQUIRED.APP_IPAD_PRO_3GEN_129`：IPA 裡兩個 bundle `UIDeviceFamily` 都是 1,2——
+  🔴 xcodegen 的 target 預設蓋掉全域 `TARGETED_DEVICE_FAMILY: "1"`，要寫在**每個 target** 的 settings.base。
+- 🔴 xcodegen `info:` 產的 plist `CFBundleVersion` 寫死 "1"，不會跟 `CURRENT_PROJECT_VERSION`；要在 info.properties 明寫
+  `CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"`／`CFBundleShortVersionString: "$(MARKETING_VERSION)"`。
+- build 2 上傳 Delivery `df7347b9-ae88-4119-a884-3ec59e2a7a6b`，IPA 在 `~/Desktop/utuvo builds/UTUVO-Panel-1.0-2/`（SHA `a9b384fd…`；1.0-1 已刪）。
+  處理完要：掛上 version → reviewSubmissionItems（submission `563c05f0-af0a-446a-b1e1-ab57742bf396` 已建、空的）。
+- 真機已裝 build 2 archive 版。
