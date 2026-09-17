@@ -196,3 +196,18 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 🔴 **iOS 26 起 `sms:`／`messages://`／`imessage://` 全部開「新訊息」**（Apple 社群 256213344），
   只有 **`ichat://`** 開對話列表；sim 四 scheme 截圖＋ichat 截圖 `39`。Check 加驗。
 - 設定頁 footer 那句「會先回到這個 app」已過時，改掉。
+
+## 09-17 12:10 第十七輪：上架準備（1.0 (1)）＋開源準備
+
+- 上架前修：移除 `App-prefs://` preset（審核會退）、移除「開機時間」（boot-time API 沒有「顯示給使用者」的理由碼）、
+  Open-Meteo 座標粗化到 2 位（隱私標籤＝Coarse Location）、`ITSAppUsesNonExemptEncryption=false`、
+  `Shared/PrivacyInfo.xcprivacy`（UserDefaults CA92.1／DiskSpace E174.1／CoarseLocation 不連結不追蹤）進兩個 bundle、
+  URL scheme 從殘留的 `glasspanel` 修成 `utuvopanel`。版號 1.0 (1)。
+- Archive（Release, generic iOS）→ export app-store-connect：🔴 **export 的 IPA 打包步驟會吃到 Homebrew rsync 3.5 而掛「Copy failed」**，
+  要 `env PATH=/usr/bin:/bin:/usr/sbin:/sbin xcodebuild -exportArchive …`。IPA 在 `~/Desktop/utuvo builds/UTUVO-Panel-1.0-1/export/UTUVOPanel.ipa`
+  （SHA `77df1fc5…`，已入 SHA256SUMS）。
+- `altool --validate-app`：**Unable to find Apple ID for Bundle ID 'com.utuvo.panel'** → App Store Connect 還沒有 app 紀錄（API 不能建），
+  卡 Micky。建好後：`xcrun altool --upload-app -f <ipa> -t ios --apiKey $ASC_KEY_ID --apiIssuer $ASC_ISSUER_ID`。
+- 填寫稿 `docs/AppStore/1.0-metadata.md`（名稱／SKU／文案 en+zh／隱私問卷／審核備註／截圖規格／風險）。
+- 開源：README＋LICENSE（MIT，mark 與磚除外）；credscan 全史 415 blob 乾淨。**沒有 push、沒有建 remote**——等 Micky。
+- 真機已裝 archive 版（1.0 (1)）。
