@@ -456,8 +456,8 @@ private struct SystemRow: View {
         Card {
             HStack(spacing: 0) {
                 cell("tile-cpu", "cpu", system.map { "\(Int($0.cpuPercent.rounded()))%" } ?? "—", "CPU")
-                cell("tile-memory", "memorychip", system.map { SystemSnapshot.gb($0.memoryUsedBytes) + "/" + SystemSnapshot.gb($0.memoryTotalBytes) } ?? "—", "RAM GB")
-                cell("tile-storage", "internaldrive", system.map { SystemSnapshot.gb($0.diskFreeBytes) } ?? "—", "剩餘 GB")
+                cell("tile-memory", "memorychip", system.map { SystemSnapshot.gb($0.memoryUsedBytes) + "G" } ?? "—", "RAM")
+                cell("tile-storage", "internaldrive", system.map { SystemSnapshot.gb($0.diskFreeBytes) + "G" } ?? "—", "可用")
                 cell(system?.networkTile ?? "tile-offline", system?.networkSymbol ?? "wifi.slash",
                      system.flatMap { s in s.batteryLevel.map { "\(Int($0 * 100))%" } } ?? (system?.networkLabel ?? "—"),
                      system?.batteryLevel != nil ? (system?.networkLabel ?? "") : "連線")
@@ -465,12 +465,13 @@ private struct SystemRow: View {
         }
     }
     private func cell(_ tile: String, _ symbol: String, _ value: String, _ label: String) -> some View {
-        HStack(spacing: 8) {
-            Tile(name: tile, symbol: symbol, size: 30)
+        HStack(spacing: 6) {
+            Tile(name: tile, symbol: symbol, size: 26)
             VStack(alignment: .leading, spacing: 0) {
-                Text(value).pf(15, .bold).monospacedDigit().lineLimit(1).minimumScaleFactor(0.7)
-                Text(label).pf(10, .semibold).opacity(0.7).lineLimit(1)
+                Text(value).pf(14, .bold).monospacedDigit().lineLimit(1).minimumScaleFactor(0.6)
+                Text(label).pf(10, .semibold).opacity(0.7).lineLimit(1).minimumScaleFactor(0.7)
             }
+            .layoutPriority(1)
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity)

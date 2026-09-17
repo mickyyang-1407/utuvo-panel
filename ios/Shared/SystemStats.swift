@@ -15,8 +15,10 @@ struct SystemSnapshot: Codable, Equatable {
     var batteryLevel: Double?       // 0…1, nil when the extension cannot read it
     var sampled: Date
 
+    /// Compact size: 3.1 / 118 / 1.2T — no unit for GB so the row stays narrow.
     static func gb(_ bytes: UInt64) -> String {
         let g = Double(bytes) / 1_000_000_000
+        if g >= 1000 { return String(format: "%.1fT", g / 1000) }
         return g >= 100 ? String(format: "%.0f", g) : String(format: "%.1f", g)
     }
     var networkLabel: String {
