@@ -234,3 +234,17 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - build 2 上傳 Delivery `df7347b9-ae88-4119-a884-3ec59e2a7a6b`，IPA 在 `~/Desktop/utuvo builds/UTUVO-Panel-1.0-2/`（SHA `a9b384fd…`；1.0-1 已刪）。
   處理完要：掛上 version → reviewSubmissionItems（submission `563c05f0-af0a-446a-b1e1-ab57742bf396` 已建、空的）。
 - 真機已裝 build 2 archive 版。
+
+## 09-17 13:25 第二十輪：build 2 VALID、掛上 1.0；只剩 App Privacy
+
+- build 2 `df7347b9` VALID，已掛上 version `cf1e60dc`。reviewSubmission `563c05f0` READY_FOR_REVIEW（空）。
+- `reviewSubmissionItems` 回 `STATE_ERROR.APP_DATA_USAGES_REQUIRED`；`/v1/appDataUsages`、`apps/{id}/appDataUsages` 等四種路徑都 404 → **App Privacy 只能網頁填**。
+- Micky 填完後跑（一次到位）：
+  ```
+  cd ~/Projects/utuvo-panel && python3 - <<'EOF'
+  import sys; sys.path.insert(0,'tools'); from asc import request
+  RS="563c05f0-af0a-446a-b1e1-ab57742bf396"; VER="cf1e60dc-8f70-4775-9f80-ddbf01ba5966"
+  print(request("POST","/v1/reviewSubmissionItems",{"data":{"type":"reviewSubmissionItems","relationships":{"reviewSubmission":{"data":{"type":"reviewSubmissions","id":RS}},"appStoreVersion":{"data":{"type":"appStoreVersions","id":VER}}}}})[0])
+  print(request("PATCH",f"/v1/reviewSubmissions/{RS}",{"data":{"type":"reviewSubmissions","id":RS,"attributes":{"submitted":True}}})[0])
+  EOF
+  ```
