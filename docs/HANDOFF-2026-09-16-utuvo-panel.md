@@ -255,3 +255,13 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - `reviewSubmissionItems` 201 → `reviewSubmissions` submitted → **WAITING_FOR_REVIEW**（submission `563c05f0`、version 1.0、build 2）。
 - 接下來等 Apple；退件的第一嫌疑是 5.2.5（五磚像 Apple icon），備案＝換抽象符號版磚重傳 build 3。
 - 尚未決定：GitHub repo private／public。
+
+## 09-17 14:00 第二十二輪：開源（public）
+
+- Micky：「都乾淨的話，我想開源」。掃描：credscan 全史乾淨；樹與史裡只有 ASC key id／issuer id（非密鑰，但不該公開）→
+  `tools/asc.py` 改只讀 `ASC_KEY_ID`／`ASC_ISSUER_ID`／`ASC_KEY_PATH` 環境變數，handoff 改佔位，`git filter-repo --replace-text` 改寫全史（0 命中）。
+  舊史留在本機分支 `archive/2026-09-17-pre-oss`（也被 filter-repo 改寫過）。
+- `gh repo create mickyyang-1407/utuvo-panel --public --push`；push 前 credscan 兩次綠（`&&` 串住）；push 後 fresh clone 復掃。
+- 這批值不在 repo 裡，用時 export：key id 與 issuer 在 `~/Projects/pik-player-mobile/HANDOFF-2026-08-22-GO-SUBMISSION-READY.md` §48，
+  .p8 在 `~/.appstoreconnect/private_keys/`。
+- 授權：程式碼 MIT；`UTUVOPanel.icon`（家族 mark）與 `Tiles.xcassets`／`docs/tile-sources-chatgpt`（磚圖）保留權利，LICENSE 已註明。
