@@ -2,3 +2,5 @@
 ios/GlassPanel.xcodeproj/
 DerivedData/
 build/
+__pycache__/
+*.pyc
