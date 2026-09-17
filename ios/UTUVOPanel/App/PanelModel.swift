@@ -117,22 +117,24 @@ final class PanelModel: NSObject, ObservableObject {
     func refreshStatuses() {
         calendarStatus = Self.describe(EKEventStore.authorizationStatus(for: .event))
         locationStatus = Self.describe(location.authorizationStatus) + (config.city.map { " · \($0)" } ?? "")
-        healthStatus = HKHealthStore.isHealthDataAvailable() ? (activity == nil ? "未讀取" : "已讀取 \(activity!.steps) 步") : "此裝置沒有健康資料"
+        healthStatus = HKHealthStore.isHealthDataAvailable()
+            ? (activity == nil ? String(localized: "未讀取") : String(localized: "已讀取 \(activity!.steps) 步"))
+            : String(localized: "此裝置沒有健康資料")
     }
 
     private static func describe(_ s: EKAuthorizationStatus) -> String {
         switch s {
-        case .fullAccess: return "已授權"
-        case .writeOnly: return "只能寫入（不夠）"
-        case .denied, .restricted: return "已拒絕，去設定打開"
-        default: return "未詢問"
+        case .fullAccess: return String(localized: "已授權")
+        case .writeOnly: return String(localized: "只能寫入（不夠）")
+        case .denied, .restricted: return String(localized: "已拒絕，去設定打開")
+        default: return String(localized: "未詢問")
         }
     }
     private static func describe(_ s: CLAuthorizationStatus) -> String {
         switch s {
-        case .authorizedWhenInUse, .authorizedAlways: return "已授權"
-        case .denied, .restricted: return "已拒絕，去設定打開"
-        default: return "未詢問"
+        case .authorizedWhenInUse, .authorizedAlways: return String(localized: "已授權")
+        case .denied, .restricted: return String(localized: "已拒絕，去設定打開")
+        default: return String(localized: "未詢問")
         }
     }
 
@@ -238,7 +240,7 @@ extension PanelModel: CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        Task { @MainActor in locationStatus = "定位失敗：\(error.localizedDescription)" }
+        Task { @MainActor in locationStatus = String(localized: "定位失敗：\(error.localizedDescription)") }
     }
 }
 

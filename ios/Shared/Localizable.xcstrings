@@ -1,0 +1,916 @@
+{
+  "sourceLanguage": "zh-Hant",
+  "version": "1.0",
+  "strings": {
+    "1. 長按桌面空白處 → 左上「編輯」→「加入小工具」": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1. Touch and hold the Home Screen → Edit → Add Widget"
+          }
+        }
+      }
+    },
+    "2. 搜尋「UTUVO Panel」": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2. Search for “UTUVO Panel”"
+          }
+        }
+      }
+    },
+    "3. 選最高的那個（iOS 27 特大直式），放到空白頁": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3. Pick the tallest size (iOS 27 extra-large portrait) and place it on an empty page"
+          }
+        }
+      }
+    },
+    "4. 面板右上角的齒輪會回到這裡": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4. The gear on the panel brings you back here"
+          }
+        }
+      }
+    },
+    "今天沒有行程": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No events today"
+          }
+        }
+      }
+    },
+    "休息一下": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take it easy"
+          }
+        }
+      }
+    },
+    "健康（活動）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health (Activity)"
+          }
+        }
+      }
+    },
+    "備忘錄": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
+          }
+        }
+      }
+    },
+    "內容": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content"
+          }
+        }
+      }
+    },
+    "全天": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All day"
+          }
+        }
+      }
+    },
+    "凍雨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Freezing rain"
+          }
+        }
+      }
+    },
+    "加到桌面": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add to Home Screen"
+          }
+        }
+      }
+    },
+    "只能寫入（不夠）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write-only (not enough)"
+          }
+        }
+      }
+    },
+    "可用": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Free"
+          }
+        }
+      }
+    },
+    "在 app 裡挑五個 app": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick five apps in the app"
+          }
+        }
+      }
+    },
+    "地圖": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maps"
+          }
+        }
+      }
+    },
+    "多雲": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cloudy"
+          }
+        }
+      }
+    },
+    "大致晴朗": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostly clear"
+          }
+        }
+      }
+    },
+    "天氣": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weather"
+          }
+        }
+      }
+    },
+    "字型": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Typeface"
+          }
+        }
+      }
+    },
+    "定位中": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locating…"
+          }
+        }
+      }
+    },
+    "定位（天氣）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location (Weather)"
+          }
+        }
+      }
+    },
+    "對齊背景": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Align Background"
+          }
+        }
+      }
+    },
+    "對齊背景（拖曳面板到小工具的位置）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Align background (drag the panel to where the widget sits)"
+          }
+        }
+      }
+    },
+    "已拒絕，去設定打開": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Denied — enable in Settings"
+          }
+        }
+      }
+    },
+    "已授權": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed"
+          }
+        }
+      }
+    },
+    "常用 app": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Favourite apps"
+          }
+        }
+      }
+    },
+    "往上 1 pt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up 1 pt"
+          }
+        }
+      }
+    },
+    "往下 1 pt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Down 1 pt"
+          }
+        }
+      }
+    },
+    "捷徑": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shortcuts"
+          }
+        }
+      }
+    },
+    "換桌布": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change wallpaper"
+          }
+        }
+      }
+    },
+    "時鐘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clock"
+          }
+        }
+      }
+    },
+    "時間、行程、天氣、活動、計時器、常用 app，一塊透明的面板。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time, events, weather, activity, a timer and your favourite apps on one transparent panel."
+          }
+        }
+      }
+    },
+    "時間走秒": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show seconds"
+          }
+        }
+      }
+    },
+    "晴": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        }
+      }
+    },
+    "書籍": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Books"
+          }
+        }
+      }
+    },
+    "有線": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wired"
+          }
+        }
+      }
+    },
+    "未詢問": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not asked"
+          }
+        }
+      }
+    },
+    "未讀取": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not read"
+          }
+        }
+      }
+    },
+    "模組": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modules"
+          }
+        }
+      }
+    },
+    "此裝置沒有健康資料": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No health data on this device"
+          }
+        }
+      }
+    },
+    "步數": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steps"
+          }
+        }
+      }
+    },
+    "毛毛雨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drizzle"
+          }
+        }
+      }
+    },
+    "活動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity"
+          }
+        }
+      }
+    },
+    "清掉計時器，回到閒置。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear the timer and go idle."
+          }
+        }
+      }
+    },
+    "照片": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos"
+          }
+        }
+      }
+    },
+    "相機": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera"
+          }
+        }
+      }
+    },
+    "移除背景": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove background"
+          }
+        }
+      }
+    },
+    "站立": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stand"
+          }
+        }
+      }
+    },
+    "系統（CPU／RAM／儲存／連線）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System (CPU / RAM / storage / network)"
+          }
+        }
+      }
+    },
+    "翻譯": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Translate"
+          }
+        }
+      }
+    },
+    "行事曆": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calendar"
+          }
+        }
+      }
+    },
+    "行動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cellular"
+          }
+        }
+      }
+    },
+    "計時器 停止": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop timer"
+          }
+        }
+      }
+    },
+    "計時器 開始／暫停": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start / pause timer"
+          }
+        }
+      }
+    },
+    "計時器": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer"
+          }
+        }
+      }
+    },
+    "訊息": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Messages"
+          }
+        }
+      }
+    },
+    "設定": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        }
+      }
+    },
+    "資料來源": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data sources"
+          }
+        }
+      }
+    },
+    "透明背景": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transparent background"
+          }
+        }
+      }
+    },
+    "連線": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Network"
+          }
+        }
+      }
+    },
+    "運動": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exercise"
+          }
+        }
+      }
+    },
+    "選你的桌布（原圖或空桌面截圖）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose your wallpaper (the photo, or a blank Home Screen screenshot)"
+          }
+        }
+      }
+    },
+    "郵件": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mail"
+          }
+        }
+      }
+    },
+    "閒置時開始、進行中暫停、暫停中繼續。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts when idle, pauses when running, resumes when paused."
+          }
+        }
+      }
+    },
+    "陣雨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Showers"
+          }
+        }
+      }
+    },
+    "陣雪": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snow showers"
+          }
+        }
+      }
+    },
+    "陰": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overcast"
+          }
+        }
+      }
+    },
+    "離線": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offline"
+          }
+        }
+      }
+    },
+    "雨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rain"
+          }
+        }
+      }
+    },
+    "雪": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Snow"
+          }
+        }
+      }
+    },
+    "雷雨": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thunderstorm"
+          }
+        }
+      }
+    },
+    "雷雨冰雹": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thunderstorm with hail"
+          }
+        }
+      }
+    },
+    "電話": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phone"
+          }
+        }
+      }
+    },
+    "霧": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fog"
+          }
+        }
+      }
+    },
+    "音樂": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Music"
+          }
+        }
+      }
+    },
+    "點面板上的圖示會先回到這個 app，再跳到目標 app。iOS 只允許小工具開自己的 app。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tapping an icon on the panel opens this app first, then the target app. iOS only lets widgets open their own app."
+          }
+        }
+      }
+    },
+    "（無標題）": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "(Untitled)"
+          }
+        }
+      }
+    },
+    "完成": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "已套用到面板": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applied to the panel"
+          }
+        }
+      }
+    },
+    "計時器 %lld 分鐘": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Timer %lld min"
+          }
+        }
+      }
+    },
+    "暗度 %lld%%": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dimming %lld%%"
+          }
+        }
+      }
+    },
+    "已讀取 %lld 步": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read %lld steps"
+          }
+        }
+      }
+    },
+    "定位失敗：%@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location failed: %@"
+          }
+        }
+      }
+    },
+    "最多五個，照點選順序排列。已選 %lld／5。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Up to five, in the order you tap them. %lld/5 selected."
+          }
+        }
+      }
+    },
+    "iOS 不讓小工具真的透明（iScreen 也一樣要一張桌布）。選你設成桌布的那張原圖就好，會自動裁成面板那一塊；或滑到空白桌面截圖再選。加進桌面後用「對齊背景」拖到位。\n想完全免圖：設定 › 桌面與 App 資料庫 › 圖示樣式選「透明」，系統會把面板變成玻璃。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS doesn’t let widgets be truly transparent (iScreen needs a wallpaper too). Just pick the photo you use as wallpaper and it’s cropped to the panel automatically, or screenshot an empty Home Screen page. After adding the widget, use Align Background to drag it into place.\nTo skip images entirely: Settings › Home Screen & App Library › Icons › Clear, and the system turns the panel into glass."
+          }
+        }
+      }
+    },
+    "面板尺寸目前是估的；小工具加進桌面後會回報真實尺寸，之後重新裁一次就準了。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The panel size is estimated for now; once the widget is on the Home Screen it reports its real size and the next crop is exact."
+          }
+        }
+      }
+    },
+    "SF Pro": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SF Pro"
+          }
+        }
+      }
+    },
+    "SF Rounded": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SF Rounded"
+          }
+        }
+      }
+    },
+    "New York": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New York"
+          }
+        }
+      }
+    },
+    "SF Mono": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SF Mono"
+          }
+        }
+      }
+    }
+  }
+}

@@ -222,7 +222,9 @@ private struct HeaderRow: View {
             Spacer()
             // Settings: opens the app (widgets can only open their own container).
             Link(destination: Launcher.settingsDeepLink) {
-                GlassButton(name: "btn-gear", symbol: "gearshape.fill", size: 48)
+                GlassButton(name: "btn-gear", symbol: "gearshape.fill", size: 30)
+                    .opacity(0.85)
+                    .padding(.top, 4)
             }
             .accessibilityLabel("Settings")
         }
@@ -293,7 +295,7 @@ private struct WeatherRow: View {
                 VStack(alignment: .leading, spacing: 0) {
                     HStack(spacing: 4) {
                         Image(systemName: "location.fill").font(.system(size: 11))
-                        Text(city ?? "定位中").pf(14, .semibold)
+                        if let city { Text(city).pf(14, .semibold) } else { Text("定位中").pf(14, .semibold) }
                     }
                     Text(weather.map { "\(Int($0.temperature.rounded()))°" } ?? "--°")
                         .pf(48, .medium)
@@ -304,7 +306,7 @@ private struct WeatherRow: View {
                 VStack(alignment: .trailing, spacing: 2) {
                     let d: (symbol: String, text: String) = weather?.description ?? (symbol: "cloud.fill", text: "—")
                     Tile(name: WeatherSnapshot.tileName(for: d.symbol), symbol: d.symbol, size: 40)
-                    Text(d.text).pf(15, .semibold)
+                    Text(LocalizedStringKey(d.text)).pf(15, .semibold)
                     if let w = weather {
                         HStack(spacing: 4) {
                             Text("\(Int(w.high.rounded()))°").pf(14, .semibold)
@@ -330,7 +332,7 @@ private struct ActivityRow: View {
             }
         }
     }
-    private func stat(_ label: String, _ color: Color, _ value: String, _ unit: String) -> some View {
+    private func stat(_ label: LocalizedStringKey, _ color: Color, _ value: String, _ unit: String) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(label).pf(11, .semibold).foregroundStyle(color).widgetAccentable()
             HStack(alignment: .firstTextBaseline, spacing: 2) {
@@ -460,11 +462,11 @@ private struct SystemRow: View {
                 cell("tile-storage", "internaldrive", system.map { SystemSnapshot.gb($0.diskFreeBytes) } ?? "—", "可用")
                 cell(system?.networkTile ?? "tile-offline", system?.networkSymbol ?? "wifi.slash",
                      system.flatMap { s in s.batteryLevel.map { "\(Int($0 * 100))%" } } ?? (system?.networkLabel ?? "—"),
-                     system?.batteryLevel != nil ? (system?.networkLabel ?? "") : "連線")
+                     system?.batteryLevel != nil ? LocalizedStringKey(system?.networkLabel ?? "") : "連線")
             }
         }
     }
-    private func cell(_ tile: String, _ symbol: String, _ value: String, _ label: String) -> some View {
+    private func cell(_ tile: String, _ symbol: String, _ value: String, _ label: LocalizedStringKey) -> some View {
         HStack(spacing: 6) {
             Tile(name: tile, symbol: symbol, size: 26)
             VStack(alignment: .leading, spacing: 0) {

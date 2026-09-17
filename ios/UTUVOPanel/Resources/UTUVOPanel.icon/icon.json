@@ -6,7 +6,7 @@
   "fill-specializations": [
     {
       "value": {
-        "automatic-gradient": "extended-srgb:0.16,0.47,1.00,1.00"
+        "solid": "srgb:0.08,0.09,0.12,1.00"
       }
     }
   ],
@@ -20,7 +20,7 @@
           "fill-specializations": [
             {
               "value": {
-                "solid": "srgb:1.00000,1.00000,1.00000,1.00000"
+                "solid": "srgb:0.45,0.68,1.00,1.00"
               }
             }
           ],
@@ -40,7 +40,7 @@
       },
       "translucency": {
         "enabled": true,
-        "value": 0.45
+        "value": 0.6
       },
       "refractivity": {
         "enabled": true,

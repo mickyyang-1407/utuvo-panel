@@ -5,6 +5,7 @@ struct RootView: View {
     @EnvironmentObject private var model: PanelModel
     @State private var screenshotItem: PhotosPickerItem?
     @State private var showPicker = false
+    @State private var applied = false
 
     var body: some View {
         NavigationStack {
@@ -17,7 +18,7 @@ struct RootView: View {
 
                 Section {
                     PhotosPicker(selection: $screenshotItem, matching: .images) {
-                        Row("wallpaper", model.screenshot == nil ? "選你的桌布（原圖或空桌面截圖）" : "換桌布")
+                        if model.screenshot == nil { Row("wallpaper", "選你的桌布（原圖或空桌面截圖）") } else { Row("wallpaper", "換桌布") }
                     }
                     if model.screenshot != nil {
                         NavigationLink { AlignView() } label: {
@@ -32,8 +33,12 @@ struct RootView: View {
                 } header: {
                     Text("透明背景")
                 } footer: {
-                    Text("iOS 不讓小工具真的透明（iScreen 也一樣要一張桌布）。選你設成桌布的那張原圖就好，會自動裁成面板那一塊；或滑到空白桌面截圖再選。加進桌面後用「對齊背景」拖到位。\n想完全免圖：設定 › 桌面與 App 資料庫 › 圖示樣式選「透明」，系統會把面板變成玻璃。"
-                         + (model.panelSizeIsMeasured ? "" : "\n面板尺寸目前是估的；小工具加進桌面後會回報真實尺寸，之後重新裁一次就準了。"))
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("iOS 不讓小工具真的透明（iScreen 也一樣要一張桌布）。選你設成桌布的那張原圖就好，會自動裁成面板那一塊；或滑到空白桌面截圖再選。加進桌面後用「對齊背景」拖到位。\n想完全免圖：設定 › 桌面與 App 資料庫 › 圖示樣式選「透明」，系統會把面板變成玻璃。")
+                        if !model.panelSizeIsMeasured {
+                            Text("面板尺寸目前是估的；小工具加進桌面後會回報真實尺寸，之後重新裁一次就準了。")
+                        }
+                    }
                 }
 
                 Section("模組") {
@@ -91,6 +96,25 @@ struct RootView: View {
                 }
             }
             .navigationTitle("UTUVO Panel")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("完成") {
+                        model.reloadWidget()
+                        withAnimation { applied = true }
+                        Task { try? await Task.sleep(for: .seconds(1.6)); withAnimation { applied = false } }
+                    }
+                }
+            }
+            .overlay(alignment: .bottom) {
+                if applied {
+                    Label("已套用到面板", systemImage: "checkmark.circle.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, 16).padding(.vertical, 10)
+                        .glassEffect()
+                        .padding(.bottom, 24)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
             .onChange(of: screenshotItem) { _, item in
                 guard let item else { return }
                 Task {
@@ -105,7 +129,7 @@ struct RootView: View {
         }
     }
 
-    private func row(_ icon: String, _ title: String, _ status: String, action: @escaping () -> Void) -> some View {
+    private func row(_ icon: String, _ title: LocalizedStringKey, _ status: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
                 Row(icon, title).foregroundStyle(.primary)
@@ -162,7 +186,7 @@ private struct LauncherPicker: View {
                     } label: {
                         HStack(spacing: 12) {
                             Image("tile-\(l.id)").resizable().interpolation(.high).frame(width: 30, height: 30)
-                            Text(l.name).foregroundStyle(.primary)
+                            Text(LocalizedStringKey(l.name)).foregroundStyle(.primary)
                             Spacer()
                             if picked { Image(systemName: "checkmark").foregroundStyle(.tint) }
                         }
@@ -189,8 +213,8 @@ struct SettingsIcon: View {
 
 struct Row: View {
     let icon: String
-    let title: String
-    init(_ icon: String, _ title: String) { self.icon = icon; self.title = title }
+    let title: LocalizedStringKey
+    init(_ icon: String, _ title: LocalizedStringKey) { self.icon = icon; self.title = title }
     var body: some View {
         HStack(spacing: 12) {
             SettingsIcon(icon)

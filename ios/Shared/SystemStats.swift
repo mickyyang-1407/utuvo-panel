@@ -22,7 +22,12 @@ struct SystemSnapshot: Codable, Equatable {
         return g >= 100 ? String(format: "%.0fG", g) : String(format: "%.1fG", g)
     }
     var networkLabel: String {
-        switch network { case "wifi": return "Wi-Fi"; case "cellular": return "行動"; case "wired": return "有線"; default: return "離線" }
+        switch network {
+        case "wifi": return "Wi-Fi"
+        case "cellular": return String(localized: "行動")
+        case "wired": return String(localized: "有線")
+        default: return String(localized: "離線")
+        }
     }
     var networkTile: String {
         switch network { case "wifi": return "tile-wifi"; case "cellular": return "tile-cellular"; case "wired": return "tile-wifi"; default: return "tile-offline" }

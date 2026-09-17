@@ -1,5 +1,6 @@
 name: UTUVOPanel
 options:
+  developmentLanguage: zh-Hant
   bundleIdPrefix: com.utuvo
   deploymentTarget: { iOS: "27.0" }
   createIntermediateGroups: true

@@ -154,3 +154,13 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 面板上**所有磚／鈕／天氣**現在都是 ChatGPT 渲染（來源 `docs/tile-sources-chatgpt/01–05`），管線只剩設定頁列 icon。
 - 證據 `31-panel-final-tiles.png`。真機已裝（`da2d497`）。
 - 剩下的：App icon 顏色（Micky 要談）、真機看透明對齊、要不要開 repo。
+
+## 09-17 09:10 第十二輪：齒輪縮小、完成鈕、語言跟系統、icon 深底發光
+
+- 齒輪 48→30 pt、85% 透明度。
+- 「完成」：iOS 不允許 app 自己回桌面（只有私有 API），所以完成＝立刻 reload widget＋玻璃 toast「已套用到面板」。
+- 本地化：`Shared/Localizable.xcstrings`（source zh-Hant，en 全翻），xcodegen `developmentLanguage: zh-Hant`；
+  兩個 target 都含 catalog。Text 字面自動走 key；String 參數處改 `LocalizedStringKey`／`String(localized:)`。
+  sim（英文）實拍 `32`、`33`；其他語言退回繁中。
+- icon 改 **深底發光**（solid 0.08/0.09/0.12 底＋mark 0.45/0.68/1.0 玻璃、translucency 0.6、refractivity）——Micky 說照我建議；`34`。
+- 真機已裝。
