@@ -937,7 +937,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Free memory"
+            "value": "Free RAM"
           }
         }
       }
@@ -947,7 +947,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Free space"
+            "value": "Free"
           }
         }
       }
@@ -957,7 +957,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Used space"
+            "value": "Used"
           }
         }
       }
