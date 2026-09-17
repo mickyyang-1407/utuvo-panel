@@ -31,6 +31,8 @@ targets:
         CFBundleDisplayName: "UTUVO Panel"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown, UIInterfaceOrientationLandscapeLeft, UIInterfaceOrientationLandscapeRight]
+        UIRequiresFullScreen: true
         NSCalendarsFullAccessUsageDescription: "面板要顯示你接下來的行程。"
         NSLocationWhenInUseUsageDescription: "面板要顯示你所在地的天氣。"
         NSHealthShareUsageDescription: "面板要顯示今天的步數、運動與站立。"
