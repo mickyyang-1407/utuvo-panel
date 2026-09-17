@@ -16,6 +16,24 @@ struct TimerToggleIntent: AppIntent {
     }
 }
 
+/// Opens another app straight from the widget. iOS 18+ lets an intent hand the system an
+/// OpenURLIntent, so the target app launches without our app ever coming to the foreground.
+struct OpenAppIntent: AppIntent {
+    static var title: LocalizedStringResource = "開啟 app"
+    static var isDiscoverable = false
+    static var openAppWhenRun = false
+
+    @Parameter(title: "Launcher") var id: String
+
+    init() {}
+    init(id: String) { self.id = id }
+
+    func perform() async throws -> some IntentResult & OpensIntent {
+        let url = Launcher.byID(id).flatMap { URL(string: $0.url) } ?? Launcher.settingsDeepLink
+        return .result(opensIntent: OpenURLIntent(url))
+    }
+}
+
 struct TimerStopIntent: AppIntent {
     static var title: LocalizedStringResource = "計時器 停止"
     static var description = IntentDescription("清掉計時器，回到閒置。")

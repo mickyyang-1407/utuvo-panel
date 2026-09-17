@@ -180,3 +180,11 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 行事曆列→`calshow://`、天氣列→`weather://`、活動列→`fitnessapp://`（新 preset「健身」），都經 container app 轉發（`open()` helper 包 Link）。
 - Messages preset `sms:`→`messages://`（開對話列表，不是新訊息）。Check 加兩條。
 - test11：點日曆列 → `com.apple.mobilecal` 前景，過。模擬器沒有天氣 app，天氣列只能真機驗。真機已裝。
+
+## 09-17 11:20 第十五輪：磚直接開目標 app（不再經過本 app）
+
+- 🔴 之前「小工具只能開自己的 app」是舊知識。**iOS 18+ `OpenURLIntent`**：widget 的 `Button(intent:)` 在 `perform()` 回傳
+  `.result(opensIntent: OpenURLIntent(url))`，系統直接開該 URL，本 app 不進前景。`Shared/Intents.swift` 的 `OpenAppIntent(id:)`。
+- 五磚、行事曆／天氣／活動列全改 `Button(intent: OpenAppIntent)`；test6 加斷言「本 app 不在前景」，過。
+- 空白處（含系統列、標頭）`.widgetURL(settings)` → 直接開設定 sheet，不再落在沒反應的預覽頁。
+- 真機已裝（`Messages`／`Weather`／`Fitness` scheme 只能真機驗）。

@@ -63,12 +63,14 @@ struct PanelView: View {
             .padding(pad)
             .environment(\.panelAccented, accented)
             .environment(\.panelFont, data.config.design)
+            // Anything without its own button (header, system row, gaps) opens the app's settings sheet.
+            .widgetURL(Launcher.settingsDeepLink)
             .modifier(BackgroundModifier(image: data.background, tint: data.config.tint, inWidget: inWidget, accented: accented))
     }
 
-    /// Wrap a row in a Link to a launcher's deep link (the app forwards to the real URL scheme).
+    /// Wrap a row in a button that opens the launcher's app directly (OpenAppIntent → OpenURLIntent).
     @ViewBuilder private func open<V: View>(_ id: String, @ViewBuilder _ row: () -> V) -> some View {
-        if let l = Launcher.byID(id) { Link(destination: l.deepLink) { row() } } else { row() }
+        Button(intent: OpenAppIntent(id: id)) { row() }.buttonStyle(.plain)
     }
 
     @ViewBuilder private var content: some View {
@@ -424,9 +426,11 @@ private struct LauncherRow: View {
             HStack(spacing: 0) {
                 let launchers = ids.prefix(5).compactMap(Launcher.byID)
                 ForEach(launchers) { l in
-                    Link(destination: l.deepLink) {
+                    Button(intent: OpenAppIntent(id: l.id)) {
                         Tile(name: "tile-\(l.id)", symbol: l.symbol, size: 52)
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(LocalizedStringKey(l.name))
                     .frame(maxWidth: .infinity)
                 }
                 if launchers.isEmpty {

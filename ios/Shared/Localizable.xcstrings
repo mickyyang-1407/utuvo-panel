@@ -1101,6 +1101,16 @@
           }
         }
       }
+    },
+    "開啟 app": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open app"
+          }
+        }
+      }
     }
   }
 }

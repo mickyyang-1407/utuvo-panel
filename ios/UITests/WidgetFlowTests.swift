@@ -188,6 +188,8 @@ extension WidgetFlowTests {
         sleep(2)
         snap("after-launcher-tap")
         XCTAssertTrue(ok, "Maps came to the foreground")
+        // Direct launch: our own app must not have been brought forward on the way.
+        XCTAssertNotEqual(XCUIApplication().state, .runningForeground, "container app stayed out of the way")
     }
 }
 
