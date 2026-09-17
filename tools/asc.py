@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 API="https://api.appstoreconnect.apple.com"
-KEY_ID=os.environ.get("ASC_KEY_ID","$ASC_KEY_ID"); ISSUER=os.environ.get("ASC_ISSUER_ID","$ASC_ISSUER_ID")
+KEY_ID=os.environ["ASC_KEY_ID"]; ISSUER=os.environ["ASC_ISSUER_ID"]   # set ASC_KEY_ID / ASC_ISSUER_ID / ASC_KEY_PATH in your shell
 KEY_PATH=Path(os.environ.get("ASC_KEY_PATH",f"~/.appstoreconnect/private_keys/AuthKey_{KEY_ID}.p8")).expanduser()
 def b64(b): return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
 def token():
