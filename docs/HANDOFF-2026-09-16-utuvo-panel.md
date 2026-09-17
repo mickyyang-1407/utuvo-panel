@@ -248,3 +248,10 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
   print(request("PATCH",f"/v1/reviewSubmissions/{RS}",{"data":{"type":"reviewSubmissions","id":RS,"attributes":{"submitted":True}}})[0])
   EOF
   ```
+
+## 09-17 13:40 第二十一輪：已送審
+
+- Micky 網頁 Publish 了 App Privacy（Coarse Location／App Functionality／不連結／不追蹤）。
+- `reviewSubmissionItems` 201 → `reviewSubmissions` submitted → **WAITING_FOR_REVIEW**（submission `563c05f0`、version 1.0、build 2）。
+- 接下來等 Apple；退件的第一嫌疑是 5.2.5（五磚像 Apple icon），備案＝換抽象符號版磚重傳 build 3。
+- 尚未決定：GitHub repo private／public。
