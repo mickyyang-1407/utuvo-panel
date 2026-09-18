@@ -4,3 +4,4 @@ DerivedData/
 build/
 __pycache__/
 *.pyc
+DerivedData-*/

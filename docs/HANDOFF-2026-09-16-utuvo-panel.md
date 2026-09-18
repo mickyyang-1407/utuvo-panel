@@ -265,3 +265,19 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - 這批值不在 repo 裡，用時 export：key id 與 issuer 在 `~/Projects/pik-player-mobile/HANDOFF-2026-08-22-GO-SUBMISSION-READY.md` §48，
   .p8 在 `~/.appstoreconnect/private_keys/`。
 - 授權：程式碼 MIT；`UTUVOPanel.icon`（家族 mark）與 `Tiles.xcassets`／`docs/tile-sources-chatgpt`（磚圖）保留權利，LICENSE 已註明。
+
+## 09-18 10:10 第二十三輪：所有 icon 改成 Apple 自家質感（Micky 貼 Finder 應用程式截圖：「不是廉價的發光 app icon」）
+
+- 棄用 ChatGPT 磚（那批是「發光玻璃」語彙）。**全部 54 顆**改由 `tools/make-tiles.py` 用 Apple 的 `ictool` 渲染，參數**對 Apple macOS 27 自家 icon 校準**：
+  - 參考圖：`NSWorkspace.icon(forFile:)` 抓 `/System/Applications/*.app`，**畫進 sRGB CGContext**（`.deviceRGB` 會失真）。
+  - 🔴 ictool 輸出是 **Display P3**，量測前必須用 ICC 轉 sRGB，否則顏色差到以為參數錯（scratchpad `iconmeasure.py`）。
+  - 🔴 Icon Composer 會把圖層內縮：畫布佔比 f 的字形，要 **scale 1.152** 才會在 icon 上也是 f（Messages 實測 0.732 vs Apple 0.73）。
+  - 配方：兩色 `linear-gradient` 底（Apple icon 取樣色）＋ glass 字形、translucency 0.5、neutral shadow 0.5、lighting individual。
+    Phone／Mail／Books／Weather 字形寬各對到 Apple ±0.02。
+  - 多色 SF Symbol 用 `symbol2png` 的 palette 層拆開（layer 0 = 主體、1 = 點綴；翻譯的「A」與碼錶指針在 layer 0、本體在 layer 2）。
+  - Notes／Calendar／Clock 用白底＋`flat()` 印刷層（無玻璃無陰影），跟 Apple 的白色系一致。
+- App icon：藍（Mail 色）＋白色玻璃家族 mark，mark 高 0.80。候選（藍／白／深藍／靛）在 scratchpad。
+- 驗證：Check 46 綠；sim UI 測試 6 條綠（面板、計時器、直開 Maps、日曆列、設定、桌面）；真機已裝；repo 推 `1d94a14`（credscan 綠才推）。
+- **build 3** 上傳 Delivery `fc1e64b9-f5d1-4d3e-8f2c-e2e4973fd73e`（IPA `~/Desktop/utuvo builds/UTUVO-Panel-1.0-3/`）。
+  送審中截圖與 build 都鎖住（DELETE 回 409）→ `tools/resubmit.py 3 <dir> widget-in-place timer-running settings-top settings-mid`
+  會撤回、換 build 3、換兩語截圖、重送。
