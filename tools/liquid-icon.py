@@ -27,11 +27,11 @@ def lift(v, t=0.22):
     return tuple(round(x + (255 - x) * t) for x in v)
 
 
-def write(pkg, mark, colour, glyph, scale):
+def write(pkg, mark, colour, glyph, scale, mark_name="mark"):
     shutil.rmtree(pkg, ignore_errors=True); os.makedirs(f"{pkg}/Assets")
-    ext = os.path.splitext(mark)[1]; shutil.copy(mark, f"{pkg}/Assets/mark{ext}")
+    ext = os.path.splitext(mark)[1]; shutil.copy(mark, f"{pkg}/Assets/{mark_name}{ext}")
     doc = {"fill": {"linear-gradient": [c(lift(colour)), c(colour)]},
-           "groups": [{"layers": [{"glass": True, "image-name": f"mark{ext}", "name": "mark", "fill": {"solid": c(glyph)},
+           "groups": [{"layers": [{"glass": True, "image-name": f"{mark_name}{ext}", "name": mark_name, "fill": {"solid": c(glyph)},
                                    "position": {"scale": scale, "translation-in-points": [0, 0]}}],
                        "lighting": "individual", "shadow": {"kind": "neutral", "opacity": 0.5},
                        "translucency": {"enabled": True, "value": 0.5}}],
