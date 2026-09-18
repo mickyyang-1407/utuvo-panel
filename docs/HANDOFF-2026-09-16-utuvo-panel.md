@@ -281,3 +281,5 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
 - **build 3** 上傳 Delivery `fc1e64b9-f5d1-4d3e-8f2c-e2e4973fd73e`（IPA `~/Desktop/utuvo builds/UTUVO-Panel-1.0-3/`）。
   送審中截圖與 build 都鎖住（DELETE 回 409）→ `tools/resubmit.py 3 <dir> widget-in-place timer-running settings-top settings-mid`
   會撤回、換 build 3、換兩語截圖、重送。
+- 11:20 `resubmit.py` 跑完：撤回舊送審 → 掛 build 3 → 兩語截圖換新 4 張 → **新送審 `e84adf6b-…` WAITING_FOR_REVIEW（build 3）**。
+  🔴 `apps/{id}/builds?filter[version]` 對新 build 有延遲（顯示不存在），改用 `/v1/builds?filter[app]=…&filter[version]=…`。

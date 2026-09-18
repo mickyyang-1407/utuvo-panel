@@ -31,7 +31,7 @@ for _ in range(40):
 print("version state", state)
 
 # 2. attach the new build
-st, b = request("GET", f"/v1/apps/{APP}/builds?filter[version]={build_version}&limit=1")
+st, b = request("GET", f"/v1/builds?filter[app]={APP}&filter[version]={build_version}&limit=1")
 build = b["data"][0]
 assert build["attributes"]["processingState"] == "VALID", build["attributes"]["processingState"]
 ok("attach build", *request("PATCH", f"/v1/appStoreVersions/{VER}/relationships/build", {"data": {"type": "builds", "id": build["id"]}}))
