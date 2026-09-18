@@ -283,3 +283,10 @@ xcodebuild -project UTUVOPanel.xcodeproj -scheme UTUVOPanel -destination "platfo
   會撤回、換 build 3、換兩語截圖、重送。
 - 11:20 `resubmit.py` 跑完：撤回舊送審 → 掛 build 3 → 兩語截圖換新 4 張 → **新送審 `e84adf6b-…` WAITING_FOR_REVIEW（build 3）**。
   🔴 `apps/{id}/builds?filter[version]` 對新 build 有延遲（顯示不存在），改用 `/v1/builds?filter[app]=…&filter[version]=…`。
+
+## 09-18 第二十四輪：mark 對齊家族＋家族 icon 工具
+
+- Micky：listener 要大一些、對齊別的 UTUVO。家族 .icon 全是原 mark＋scale 1.15；Panel 加粗 mark 改 **scale 1.15**（並排目視同高）。
+- `tools/liquid-icon.py <mark> <#色> <out.icon> [--scale 1.15] [--preview]`：家族 icon 產生器（產品色兩色漸層＋白色玻璃 mark），預覽輸出已轉 sRGB。
+- 家族換 icon 的 agent prompt：`~/Desktop/UTUVO-Panel-icon-prompt/PROMPT-family-icons.md`（給 Claude Code／Codex，不是 ChatGPT）。
+- build 4（Delivery `bcbef645`）VALID → resubmit → **submission `21f29296` WAITING_FOR_REVIEW（build 4）**。IPA `~/Desktop/utuvo builds/UTUVO-Panel-1.0-4/`。
