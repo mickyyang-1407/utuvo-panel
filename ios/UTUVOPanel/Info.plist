@@ -36,7 +36,7 @@
 	<key>NSCalendarsFullAccessUsageDescription</key>
 	<string>面板要顯示你接下來的行程。</string>
 	<key>NSHealthShareUsageDescription</key>
-	<string>面板要顯示今天的步數、運動與站立。</string>
+	<string>面板要顯示今天的步數、距離、運動與站立。</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>不會寫入任何健康資料。</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

@@ -15,6 +15,8 @@ final class PanelModel: NSObject, ObservableObject {
     }
     @Published private(set) var screenshot: UIImage?
     @Published private(set) var background: UIImage?
+    /// Cached so the preview does not re-measure the crop on every redraw.
+    private(set) var backgroundLuma: Double?
     @Published private(set) var activity: ActivitySnapshot?
     /// Settings sheet; the widget's gear deep link opens it directly.
     @Published var showSettings = false
@@ -34,6 +36,7 @@ final class PanelModel: NSObject, ObservableObject {
         super.init()
         screenshot = UIImage(contentsOfFile: screenshotURL.path)
         background = UIImage(contentsOfFile: Shared.backgroundURL.path)
+        backgroundLuma = background?.averageLuminance
         activity = Shared.defaults.codable(ActivitySnapshot.self, forKey: Shared.Key.activity)
         location.delegate = self
         refreshStatuses()
@@ -52,6 +55,7 @@ final class PanelModel: NSObject, ObservableObject {
         d.activity = activity ?? d.activity
         d.timer = TimerState.load()
         d.system = Shared.defaults.codable(SystemSnapshot.self, forKey: Shared.Key.system) ?? d.system
+        d.backgroundLuma = backgroundLuma
         if config.city == nil { d.config.city = "Taipei" }
         return d
     }
@@ -93,6 +97,7 @@ final class PanelModel: NSObject, ObservableObject {
     func clearScreenshot() {
         screenshot = nil
         background = nil
+        backgroundLuma = nil
         try? FileManager.default.removeItem(at: screenshotURL)
         try? FileManager.default.removeItem(at: Shared.backgroundURL)
         reloadWidget()
@@ -109,6 +114,7 @@ final class PanelModel: NSObject, ObservableObject {
         guard let cut = cg.cropping(to: crop) else { return }
         let image = UIImage(cgImage: cut)
         background = image
+        backgroundLuma = image.averageLuminance
         try? image.jpegData(compressionQuality: 0.9)?.write(to: Shared.backgroundURL, options: .atomic)
         reloadWidget()
     }
@@ -162,6 +168,7 @@ final class PanelModel: NSObject, ObservableObject {
         guard HKHealthStore.isHealthDataAvailable() else { refreshStatuses(); return }
         let read: Set<HKObjectType> = [
             HKQuantityType(.stepCount),
+            HKQuantityType(.distanceWalkingRunning),
             HKQuantityType(.activeEnergyBurned),
             HKQuantityType(.appleExerciseTime),
             HKQuantityType(.appleStandTime),
@@ -188,6 +195,16 @@ final class PanelModel: NSObject, ObservableObject {
             health.execute(q)
         }
         if let steps { snap.steps = Int(steps) }
+
+        // Distance walked/run today — the ribbon shows it next to the step count.
+        let distance: Double? = await withCheckedContinuation { cont in
+            let pred = HKQuery.predicateForSamples(withStart: start, end: Date())
+            let q = HKStatisticsQuery(quantityType: HKQuantityType(.distanceWalkingRunning), quantitySamplePredicate: pred, options: .cumulativeSum) { _, stats, _ in
+                cont.resume(returning: stats?.sumQuantity()?.doubleValue(for: .meter()))
+            }
+            health.execute(q)
+        }
+        if let distance { snap.distanceMeters = distance }
 
         // Rings: today's activity summary carries both totals and goals.
         let summary: HKActivitySummary? = await withCheckedContinuation { cont in

@@ -36,6 +36,8 @@ final class WidgetFlowTests: XCTestCase {
         }
         sleep(3)
         snap("app-after-pick")
+        // The row sits under the panel preview; Form is lazy, so it is not in the tree until scrolled to.
+        app.swipeUp(); sleep(1)
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label == '移除背景' OR label == 'Remove background'")).firstMatch.waitForExistence(timeout: 10), "background saved → 移除背景 visible")
         dump(app, "app-after-pick")
     }
@@ -223,7 +225,9 @@ extension WidgetFlowTests {
         print("=== PICKER \(all.count) images: \(all.map(\.label))")
         all.last!.tap()
         sleep(3)
-        XCTAssertTrue(app.buttons["移除背景"].waitForExistence(timeout: 10))
+        app.swipeUp(); sleep(1)
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label == '移除背景' OR label == 'Remove background'")).firstMatch.waitForExistence(timeout: 10),
+                      "background saved (label is localised — do not hard-code the zh string)")
         snap("app-after-pick-newest")
     }
 }

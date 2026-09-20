@@ -69,6 +69,11 @@ struct SettingsView: View {
                         Text("New York").tag("serif")
                         Text("SF Mono").tag("mono")
                     } label: { Row("text", "字型") }
+                    Picker(selection: $model.config.panelScheme) {
+                        Text("自動").tag("auto")
+                        Text("淺色玻璃").tag("light")
+                        Text("深色玻璃").tag("dark")
+                    } label: { Row("wallpaper", "面板色調") }
                     Stepper(value: $model.config.timerMinutes, in: 1...180) { Row("timer", "計時器 \(model.config.timerMinutes) 分鐘") }
                 }
 

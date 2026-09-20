@@ -50,13 +50,15 @@ struct PanelProvider: TimelineProvider {
         let system = config.showSystem ? await SystemStats.sample() : nil
         if let system { Shared.defaults.set(codable: system, forKey: Shared.Key.system) }
         let background = UIImage(contentsOfFile: Shared.backgroundURL.path)
+        // Measured once per timeline: decides light-glass-on-dark-ink vs the reverse.
+        let luma = background?.averageLuminance
 
         var entries: [PanelEntry] = []
         for i in 0..<30 {
             let date = minute.addingTimeInterval(TimeInterval(i * 60))
             let data = PanelData(date: date, config: config, weather: weather, activity: activity,
                                  event: event, timer: timer, system: system, background: background,
-                                 compact: compact)
+                                 compact: compact, backgroundLuma: luma)
             entries.append(PanelEntry(date: date, data: data))
         }
         // If a timer ends inside this window, add an entry right at that moment so the row flips to idle.

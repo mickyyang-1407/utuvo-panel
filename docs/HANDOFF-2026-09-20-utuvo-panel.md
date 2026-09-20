@@ -3,6 +3,8 @@
 > 版本：v1 ｜ 更新時間：2026-09-20 ｜ 上一棒：Claude Code（Fable 5.1 → Opus 5）｜ 下一棒：任何 AI 或 Micky
 > 狀態：**1.0 (build 4) 送審中（WAITING_FOR_REVIEW，已排隊 2 天）。程式面沒有未完成的工作，卡的是 Apple 與 Micky 的目視。**
 > 前段逐輪流水帳在 `docs/HANDOFF-2026-09-16-utuvo-panel.md`（24 輪，含所有踩坑）。本檔是接手點，只寫現況與怎麼繼續。
+> 🔴 **2026-09-21：面板長相已整頁改版（v2 editorial glass）。「面板長什麼樣」以 `HANDOFF-2026-09-21-panel-v2-visual.md` 為準**，
+> 本檔其餘（上架／環境／指令／禁區）仍然有效。
 
 ---
 

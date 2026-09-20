@@ -61,7 +61,11 @@ struct PanelConfig: Codable, Equatable {
     /// Clock shows a live seconds counter instead of hh:mm.
     var showSeconds = false
     /// Panel typeface: "default" (SF Pro), "rounded" (SF Rounded), "serif" (New York), "mono" (SF Mono).
-    var fontDesign = "rounded"
+    var fontDesign = "default"
+    /// Ink scheme: "auto" (from the wallpaper), "light" (dark ink on light glass), "dark" (white ink).
+    var panelScheme = "auto"
+    /// Bumped when the panel design changes in a way that has to re-seat old settings. 2 = editorial glass (2026-09-21).
+    var designVersion = 0
     var timerMinutes = 5
     var launcherIDs: [String] = ["music", "messages", "maps", "camera", "notes"]
     /// 0 = fully transparent wallpaper, 1 = opaque black.
@@ -91,6 +95,8 @@ struct PanelConfig: Codable, Equatable {
         note = try c.decodeIfPresent(String.self, forKey: .note) ?? d.note
         showSeconds = try c.decodeIfPresent(Bool.self, forKey: .showSeconds) ?? d.showSeconds
         fontDesign = try c.decodeIfPresent(String.self, forKey: .fontDesign) ?? d.fontDesign
+        panelScheme = try c.decodeIfPresent(String.self, forKey: .panelScheme) ?? d.panelScheme
+        designVersion = try c.decodeIfPresent(Int.self, forKey: .designVersion) ?? d.designVersion
         timerMinutes = try c.decodeIfPresent(Int.self, forKey: .timerMinutes) ?? d.timerMinutes
         launcherIDs = try c.decodeIfPresent([String].self, forKey: .launcherIDs) ?? d.launcherIDs
         tint = try c.decodeIfPresent(Double.self, forKey: .tint) ?? d.tint
@@ -100,8 +106,17 @@ struct PanelConfig: Codable, Equatable {
         city = try c.decodeIfPresent(String.self, forKey: .city)
     }
 
+    static let currentDesignVersion = 2
+
     static func load() -> PanelConfig {
-        Shared.defaults.codable(PanelConfig.self, forKey: Shared.Key.config) ?? PanelConfig()
+        guard var c = Shared.defaults.codable(PanelConfig.self, forKey: Shared.Key.config) else { return PanelConfig() }
+        // v2 is drawn for SF Pro; a config saved under v1 still carries the old rounded default.
+        if c.designVersion < currentDesignVersion {
+            if c.fontDesign == "rounded" { c.fontDesign = "default" }
+            c.designVersion = currentDesignVersion
+            c.save()
+        }
+        return c
     }
     func save() {
         Shared.defaults.set(codable: self, forKey: Shared.Key.config)
@@ -255,6 +270,32 @@ struct ActivitySnapshot: Codable, Equatable {
     var exerciseGoal: Double = 30
     var standGoal: Double = 12
     var day: Date = Date()
+    /// Walking + running distance today, in metres. Shown on the ribbon next to the step count.
+    var distanceMeters: Double = 0
+
+    init() {}
+    init(steps: Int = 0, exerciseMinutes: Int = 0, standHours: Int = 0, moveKcal: Double = 0,
+         moveGoal: Double = 500, exerciseGoal: Double = 30, standGoal: Double = 12,
+         day: Date = Date(), distanceMeters: Double = 0) {
+        self.steps = steps; self.exerciseMinutes = exerciseMinutes; self.standHours = standHours
+        self.moveKcal = moveKcal; self.moveGoal = moveGoal; self.exerciseGoal = exerciseGoal
+        self.standGoal = standGoal; self.day = day; self.distanceMeters = distanceMeters
+    }
+
+    /// Same reason as PanelConfig: a snapshot written before a field existed must still decode.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = ActivitySnapshot()
+        steps = try c.decodeIfPresent(Int.self, forKey: .steps) ?? d.steps
+        exerciseMinutes = try c.decodeIfPresent(Int.self, forKey: .exerciseMinutes) ?? d.exerciseMinutes
+        standHours = try c.decodeIfPresent(Int.self, forKey: .standHours) ?? d.standHours
+        moveKcal = try c.decodeIfPresent(Double.self, forKey: .moveKcal) ?? d.moveKcal
+        moveGoal = try c.decodeIfPresent(Double.self, forKey: .moveGoal) ?? d.moveGoal
+        exerciseGoal = try c.decodeIfPresent(Double.self, forKey: .exerciseGoal) ?? d.exerciseGoal
+        standGoal = try c.decodeIfPresent(Double.self, forKey: .standGoal) ?? d.standGoal
+        day = try c.decodeIfPresent(Date.self, forKey: .day) ?? d.day
+        distanceMeters = try c.decodeIfPresent(Double.self, forKey: .distanceMeters) ?? d.distanceMeters
+    }
 
     var moveFraction: Double { moveGoal > 0 ? min(moveKcal / moveGoal, 1) : 0 }
     var exerciseFraction: Double { exerciseGoal > 0 ? min(Double(exerciseMinutes) / exerciseGoal, 1) : 0 }

@@ -107,7 +107,22 @@ do {
     // Older config missing new keys must still decode (defaults fill in).
     let old = #"{"note":"x"}"#.data(using: .utf8)!
     let decodedOld = try? JSONDecoder().decode(PanelConfig.self, from: old)
-    check(decodedOld?.tint == 0.0 && decodedOld?.note == "x" && decodedOld?.timerMinutes == 5 && decodedOld?.launcherIDs.count == 5 && decodedOld?.showSeconds == false && decodedOld?.fontDesign == "rounded", "old config with missing keys keeps defaults")
+    check(decodedOld?.tint == 0.0 && decodedOld?.note == "x" && decodedOld?.timerMinutes == 5 && decodedOld?.launcherIDs.count == 5 && decodedOld?.showSeconds == false && decodedOld?.fontDesign == "default", "old config with missing keys keeps defaults")
+    // A config written before the v2 redesign carries designVersion 0, which is what triggers the one-time
+    // re-seat of the typeface in PanelConfig.load().
+    check(decodedOld?.designVersion == 0 && decodedOld?.panelScheme == "auto", "pre-v2 config decodes as designVersion 0 / auto scheme")
+}
+
+// MARK: Activity snapshot decodes across versions
+do {
+    // A snapshot stored before `distanceMeters` existed must still decode (the widget would otherwise
+    // show "—" for everyone who upgrades).
+    let old = #"{"steps":812,"exerciseMinutes":12,"standHours":3,"moveKcal":140,"moveGoal":500,"exerciseGoal":30,"standGoal":12,"day":760000000}"#.data(using: .utf8)!
+    let a = try? JSONDecoder().decode(ActivitySnapshot.self, from: old)
+    check(a?.steps == 812 && a?.distanceMeters == 0, "pre-distance activity snapshot still decodes")
+    var b = ActivitySnapshot(); b.distanceMeters = 3860
+    let round = try? JSONDecoder().decode(ActivitySnapshot.self, from: JSONEncoder().encode(b))
+    check(round == b, "activity snapshot round-trips with distance")
 }
 
 // MARK: Mutation probes — flip one thing, expect red
