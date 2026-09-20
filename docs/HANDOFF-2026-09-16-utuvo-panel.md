@@ -1,5 +1,7 @@
 # UTUVO Panel — 接手點（2026-09-16 20:30 更新）
 
+> ⚠️ 2026-09-20 起接手點改為 `docs/HANDOFF-2026-09-20-utuvo-panel.md`。本檔保留為逐輪流水帳與踩坑紀錄。
+
 > 起因：Micky 丟一張小紅書截圖（Koco Widgets「iOS 27 特大尺寸組件」）說「我們也做一個吧」。
 > 非 Pik／UTUVO 產品線；獨立小 app，放 `~/Projects/utuvo-panel`（本機 git，**未開 GitHub repo**，等 Micky 說）。
 > 命名「透明面板／GlassPanel」是我代決，可改。
