@@ -101,7 +101,6 @@ struct PanelInk {
 
     var sheetFill: Color { light ? Color.white.opacity(0.14) : Color.black.opacity(0.12) }
     var cardFill: Color { light ? Color.white.opacity(0.42) : Color.black.opacity(0.26) }
-    var cardTint: Color { light ? Color.white.opacity(0.38) : Color.black.opacity(0.18) }
     var cardStroke: Color { light ? Color.white.opacity(0.62) : Color.white.opacity(0.30) }
     /// Soft halo so bare rows (header, launcher, system) stay legible straight on the wallpaper.
     var halo: Color { light ? Color.white.opacity(0.35) : Color.black.opacity(0.28) }

@@ -55,17 +55,19 @@ final class WidgetFlowTests: XCTestCase {
         let blank = springboard.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
         blank.press(forDuration: 1.5)
         sleep(2)
-        let editHome = springboard.buttons["Edit Home Screen"].firstMatch
+        let editHome = springboard.buttons.matching(NSPredicate(format: "label == 'Edit Home Screen' OR label == '編輯主畫面'")).firstMatch
         if editHome.waitForExistence(timeout: 2) { editHome.tap(); sleep(2) }
         dump(springboard, "jiggle")
         snap("jiggle")
         // iOS 18+: "Edit" (top-left) → "Add Widget"; older: "+" button.
-        if springboard.buttons["Edit"].waitForExistence(timeout: 3) {
-            springboard.buttons["Edit"].tap(); sleep(1)
-            let add = springboard.buttons["Add Widget"].firstMatch
-            if add.waitForExistence(timeout: 3) { add.tap() } else { dump(springboard, "edit-menu"); springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Widget' OR label CONTAINS '小工具'")).firstMatch.tap() }
-        } else if springboard.buttons["Add Widget"].waitForExistence(timeout: 3) {
-            springboard.buttons["Add Widget"].tap()
+        // SpringBoard's own labels follow the device language — never hard-code one language here.
+        let edit = springboard.buttons.matching(NSPredicate(format: "label == 'Edit' OR label == '編輯'")).firstMatch
+        let addWidget = springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Add Widget' OR label CONTAINS '加入小工具' OR label CONTAINS '小工具'")).firstMatch
+        if edit.waitForExistence(timeout: 3) {
+            edit.tap(); sleep(1)
+            if addWidget.waitForExistence(timeout: 3) { addWidget.tap() } else { dump(springboard, "edit-menu"); springboard.buttons.matching(NSPredicate(format: "label CONTAINS 'Widget' OR label CONTAINS '小工具'")).firstMatch.tap() }
+        } else if addWidget.waitForExistence(timeout: 3) {
+            addWidget.tap()
         } else {
             XCTFail("no Edit / Add Widget button"); return
         }

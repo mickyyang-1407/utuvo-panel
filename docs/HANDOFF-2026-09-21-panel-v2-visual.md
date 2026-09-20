@@ -79,8 +79,36 @@ CPU 16% │ RAM 128G │ 10.3T 可用 │ 有線     system 36
 | 繁中 ＋ 英文 | 都實拍過 | `simctl launch … -AppleLanguages '(zh-Hant)'` |
 | accented（Clear 圖示樣式） | 實拍過，元素齊、全白墨 | 暫時把 preview 改 `inWidget: true` ＋ `.environment(\.widgetRenderingMode, .accented)`，拍完還原 |
 | systemLarge（compact） | 實拍過，329×345 pt 無裁切 | 同上手法，`d.compact = true` ＋ `.frame(329×345)`（iOS 27 最小機型的 systemLarge） |
-| SpringBoard UI 測試 **12 條** | 全綠（含真小工具在桌面、計時器 intent、直開 Maps） | `xcodebuild … test` |
+| SpringBoard UI 測試 **12 條** | 每一條產品斷言都實測綠；會紅的兩條是環境（見下） | `xcodebuild … test` |
 | 真小工具（不是 app 預覽） | 實拍：證據 09（桌面）、10（計時中 4:58 珊瑚紅） | test4／test5 的 attachment |
+
+**這套 UI 測試不是冪等的，也不是自給自足的**（09-21 五次實測，同一份程式碼）。`test2_addWidget` **每跑一次就多放一個小工具**，
+而 XCTest 照字母序跑，`test11` 排在 `test2` 前面：
+
+| 模擬器狀態 | 通過 | 紅的是誰 · 為什麼 |
+|---|---|---|
+| 英文、桌面上剛好一個小工具且還有空白頁 | **12/12** | — |
+| 英文、我又多加了兩個小工具 | 10/12 | `test3`（見下）、`test7a` 找不到空白頁 |
+| `simctl erase` 後（**語言變成繁中**） | 6/12 | `test2` 找 `buttons["Edit"]`，SpringBoard 在繁中叫「編輯」→ 小工具加不上去，後面全倒 |
+| erase 後改回英文、第一輪 | 10/12 | `test11` 此時桌面還沒有小工具（字母序在 test2 之前）、`test3` |
+| 同上、第二輪 | 10/12 | `test3`、`test7a`（第二輪又多一個小工具，沒有空白頁了） |
+
+**所以「一輪全綠」需要桌面剛好是：一個 UTUVO Panel 小工具 ＋ 還有一頁空白。**
+跨這五輪，**每一條產品斷言都至少綠過一次，而且沒有任何一條是因為產品理由紅的**：
+真小工具畫面（test4）、計時器 intent（test5）、直開 Maps 且本 app 不進前景（test6）、日曆列開行事曆（test11）、
+設定頁 Done（test10）、桌面 icon（test8）、選桌布（test1／test7b）全部實測綠。
+
+兩條會紅的是環境，不是產品：
+- `test3_locateWidget` **完全沒有斷言**（只翻四頁、印出找到的元素、拍照）。它紅的時候是 XCUITest 在翻頁動畫中查詢丟錯。
+- `test7a_emptyPageScreenshot` 需要一頁空白，桌面被小工具塞滿就紅。
+
+**這不是「erase 之後長按壞掉」**（我一開始誤判成這樣），語言那條是**測試把 SpringBoard 的英文標籤寫死**，
+已把 `Edit`／`Add Widget`／`Edit Home Screen` 三個查詢改成中英通吃（同一台繁中 sim 上 test2 就過了）。裝置語言在
+`~/Library/Developer/CoreSimulator/Devices/<UDID>/data/Library/Preferences/.GlobalPreferences.plist`
+（`plutil -replace AppleLanguages -json '["en-US"]'` 再重開機）。
+
+看逐條結果用 `xcrun xcresulttool get test-results tests --path <xcresult> --format json`
+（⚠️ `Executed 12 tests, with N failures` 那行的 N 是**斷言數**不是失敗條數：6 條失敗會印成 10 failures）。
 
 **順手修好的兩條測試**（跟原任務分開標）：`test1_pickScreenshot`／`test7b_pickNewest` 在這台（英文）sim 上本來就紅——
 ①Form 是 lazy 的，「移除背景」那列在面板預覽下方、沒捲到就不在 accessibility tree 裡 → 斷言前加 `swipeUp()`；
