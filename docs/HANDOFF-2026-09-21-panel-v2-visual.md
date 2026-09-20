@@ -87,6 +87,20 @@ CPU 16% │ RAM 128G │ 10.3T 可用 │ 有線     system 36
 ②`test7b` 把 `移除背景` 寫死成中文，英文 sim 必紅 → 改成跟 `test1` 一樣吃兩種語言。
 修之前那一輪的 attachment 證明產品本身沒壞（背景有存進去、按鈕已變「Change wallpaper」）。
 
+**🔴🔴 卡片不能靠 `glassEffect` 上色**（量出來的）：在**真小工具**裡 `glassEffect` 會用它自己那層近乎全透明的材質蓋過底下的填色，
+所以 tint 跟 fill 都不見。量測（同一張淺桌布、同一個位置取樣）：
+| 畫法 | 卡片內 vs 面板底 的亮度差 |
+|---|---|
+| 只有 `glassEffect(.regular.tint(...))`（原本） | **2.6** ← 等於沒有卡片 |
+| 自己畫（fill ＋ 左上高光 ＋ 髮絲邊） | **37.9** ← 參考圖的卡中卡層級 |
+app 預覽看起來一直是對的（那邊 glassEffect 有作用），**只有真小工具是錯的**——這就是「驗的是自己布置好的世界」。
+證據 12（上下對照）、13（現行真小工具）。這條跟家族 icon 那條「`glassEffect(.tint)` 在 WidgetKit 內被洗白」是同一個底。
+
+**🔴🔴 驗證陷阱（這一輪踩到）**：桌面上**已放好的小工具不會載入新的 extension binary**。改完 `PanelView` 只跑
+`-only-testing:…test4_showWidget`（會重裝 app）拍到的還是舊 binary 畫的畫面——時鐘與桌布裁切會更新，所以很像「有在換」。
+抓法：把 `cardFill` 改成紅色 0.85 當 mutation probe，卡片沒變紅就是沒換。正解：`simctl uninstall` → 重跑
+`test2_addWidget` 重新放一次小工具，才算驗到新程式碼。
+
 **繁中抓到的真 bug（已修）**：`Text(date, format: .dateTime.day())` 在 zh_TW 會輸出「20日」——日期卡的「日」變得跟數字一樣大，
 週曆七格全被擠成 `2…`。改成 `String(Calendar.current.component(.day, from:))`。
 

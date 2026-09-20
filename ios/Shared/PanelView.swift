@@ -100,6 +100,7 @@ struct PanelInk {
     var coral: Color { accented ? .white : (light ? Color(hex: 0xFF4A3D) : Color(hex: 0xFF6A5E)) }
 
     var sheetFill: Color { light ? Color.white.opacity(0.14) : Color.black.opacity(0.12) }
+    var cardFill: Color { light ? Color.white.opacity(0.42) : Color.black.opacity(0.26) }
     var cardTint: Color { light ? Color.white.opacity(0.38) : Color.black.opacity(0.18) }
     var cardStroke: Color { light ? Color.white.opacity(0.62) : Color.white.opacity(0.30) }
     /// Soft halo so bare rows (header, launcher, system) stay legible straight on the wallpaper.
@@ -315,8 +316,15 @@ private struct GlassCard<Content: View>: View {
                     // System glass already behind us; just a faint rim so blocks read as blocks.
                     shape.strokeBorder(Color.white.opacity(0.25), lineWidth: 0.5)
                 } else {
-                    shape.fill(Color.clear)
-                        .glassEffect(.regular.tint(ink.cardTint), in: shape)
+                    // 🔴 Inside WidgetKit `glassEffect` renders its own near-transparent material over
+                    // whatever is behind it, so neither its tint nor a fill under it survives (measured
+                    // 2026-09-21: white 0.34 vs 0.52 under the glass came out identical on the real widget).
+                    // The card therefore paints its own glass: fill + top-left specular + hairline rim.
+                    shape.fill(ink.cardFill)
+                        .overlay {
+                            shape.fill(LinearGradient(colors: [Color.white.opacity(ink.light ? 0.30 : 0.12), .clear],
+                                                      startPoint: .topLeading, endPoint: .center))
+                        }
                         .overlay { shape.strokeBorder(ink.cardStroke, lineWidth: 0.8) }
                 }
             }
