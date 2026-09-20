@@ -153,6 +153,14 @@ app 預覽看起來一直是對的（那邊 glassEffect 有作用），**只有�
 
 ⚠️ 重送審會**重新排隊**（build 4 原本已排了 3 天）。
 
+**每天的審核狀態監看（09-21 起自動）**：Micky 交辦「每天幫我看一次」。
+`tools/review-status.py` 印一行狀態（版本狀態／掛上的 build／已等幾天／要不要他動手），
+包在 `~/Scripts/panel-review-status.sh`（憑證 `~/.config/asc/utuvo-panel.env`，600，**不進 repo**），
+由既有的 09:00 幕僚晨報（`~/Projects/tg-claude-bridge/daily-brief.sh`，launchd `app.pikaudio.micky-brief`）呼叫並推 Telegram。
+fail-safe：查不到會印「🚦 Panel 審核狀態今天讀不到」，不會無聲消失；沒有版本在審（exit 2）才安靜略過。
+四條路徑都用 stub ＋真實壞憑證驗過會紅，並在 launchd 那種乾淨環境（`env -i`）下實跑過。
+**過審／退件之後記得把這段拿掉**，不然每天會一直報已發布的狀態。
+
 ## 7. 卡 Micky（只有他能做）
 
 1. **真機目視**：1.0 (5) 已裝在他的 17 Pro Max。請他看：透明背景對齊（不齊就用 app 裡「對齊背景」拖）、
