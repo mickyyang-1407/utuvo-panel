@@ -118,11 +118,11 @@ extension EnvironmentValues {
 private struct Metrics {
     var header: CGFloat, cards: CGFloat, ribbon: CGFloat, week: CGFloat, timer: CGFloat, launch: CGFloat, system: CGFloat
     var gap: CGFloat, clock: CGFloat, hero: CGFloat, tile: CGFloat
-    static let xl = Metrics(header: 90, cards: 140, ribbon: 38, week: 88, timer: 40, launch: 62, system: 36,
+    static let xl = Metrics(header: 76, cards: 150, ribbon: 38, week: 88, timer: 40, launch: 62, system: 36,
                             gap: 7, clock: 64, hero: 54, tile: 50)
     // systemLarge is only 329×345 pt on the smallest phone iOS 27 still runs on, so this set has to
-    // fit 345 − 24 (padding) = 321: 64+104+70+52 + 3×6 = 308.
-    static let large = Metrics(header: 64, cards: 104, ribbon: 0, week: 70, timer: 0, launch: 52, system: 0,
+    // fit 345 − 24 (padding) = 321: 52+112+70+52 + 3×6 = 304.
+    static let large = Metrics(header: 52, cards: 112, ribbon: 0, week: 70, timer: 0, launch: 52, system: 0,
                                gap: 6, clock: 44, hero: 40, tile: 44)
 }
 private struct MetricsKey: EnvironmentKey { static let defaultValue = Metrics.xl }
@@ -173,11 +173,11 @@ struct PanelView: View {
 
             if data.config.showWeather || data.config.showCalendar {
                 HStack(spacing: 8) {
-                    if data.config.showWeather {
-                        open("weather") { WeatherCard(weather: data.weather, city: data.config.city) }
-                    }
                     if data.config.showCalendar {
                         open("calendar") { DateCard(date: data.date) }
+                    }
+                    if data.config.showWeather {
+                        open("weather") { WeatherCard(weather: data.weather, city: data.config.city) }
                     }
                 }
                 .frame(height: m.cards)
@@ -359,22 +359,17 @@ private struct HeaderRow: View {
 
     var body: some View {
         HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 4) {
-                Group {
-                    if showSeconds, let day = Calendar.current.dateInterval(of: .day, for: date) {
-                        // Live, ticking every second, driven by the system — no timeline entries needed.
-                        Text(timerInterval: day.start...day.end, pauseTime: nil, countsDown: false, showsHours: true)
-                    } else {
-                        Text(date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
-                    }
+            Group {
+                if showSeconds, let day = Calendar.current.dateInterval(of: .day, for: date) {
+                    // Live, ticking every second, driven by the system — no timeline entries needed.
+                    Text(timerInterval: day.start...day.end, pauseTime: nil, countsDown: false, showsHours: true)
+                } else {
+                    Text(date, format: .dateTime.hour(.twoDigits(amPM: .omitted)).minute())
                 }
-                .hero(showSeconds ? m.clock * 0.78 : m.clock)
-                .foregroundStyle(ink.primary)
-                .widgetAccentable()
-                Text(up(date.formatted(.dateTime.weekday(.wide).month(.abbreviated).day())))
-                    .caps(10)
-                    .foregroundStyle(ink.secondary)
             }
+            .hero(showSeconds ? m.clock * 0.78 : m.clock)
+            .foregroundStyle(ink.primary)
+            .widgetAccentable()
             Spacer(minLength: 8)
             // Settings: opens the app (widgets can only open their own container).
             Link(destination: Launcher.settingsDeepLink) {

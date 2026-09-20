@@ -24,15 +24,14 @@ Micky 2026-09-21 丟了三張 iPhone 桌面照（Widgy 面板：淺玻璃卡、�
 ## 2. 現在的面板長什麼樣（XL 直式 349.67 × 565.67 pt）
 
 ```
-時鐘 thin 64 ＋ 齒輪                     header 90
-SUNDAY, SEP 20（micro-caps）
-┌ 天氣卡 ────────┐ ┌ 日期卡 ───────┐     cards  140
-│ TAIPEI         │ │ SEPTEMBER     │
-│  ☀（單色）      │ │      20       │ ← 珊瑚紅 thin
-│  33°（藍 thin） │ │   Sunday      │ ← bold
-│  Clear         │ └───────────────┘
-│  H 35° L 26°   │
-└────────────────┘
+時鐘 thin 64 ＋ 齒輪                     header 76
+┌ 日期卡 ───────┐ ┌ 天氣卡 ────────┐     cards  150
+│ SEPTEMBER     │ │ TAIPEI         │
+│      21       │ │  ☀（單色）      │ ← 日期珊瑚紅 thin
+│   Monday      │ │  33°（藍 thin） │
+└───────────────┘ │  Clear         │
+                  │  H 35° L 26°   │
+                  └────────────────┘
 🚶 3264 步數 ········ 3.9 km 距離  ◎三環      ribbon 38
 ┌ 週曆卡 ──────────────────────────┐        week  88
 │ 週日 週一 週二 週三 週四 週五 週六 │
@@ -43,6 +42,8 @@ SUNDAY, SEP 20（micro-caps）
 [音樂][訊息][地圖][相機][備忘錄]          launch 62（磚沿用 ictool，未改）
 CPU 16% │ RAM 128G │ 10.3T 可用 │ 有線     system 36
 ```
+
+（09-21 Micky 微調：標頭那行日期拿掉——週曆卡本來就帶日期；日期卡與天氣卡左右對調。）
 
 所有列高／字級集中在 `Metrics`（`.xl` 與 `.large` 兩組），compact（systemLarge）自動縮一號並隱藏 ribbon／計時器／系統列。
 
