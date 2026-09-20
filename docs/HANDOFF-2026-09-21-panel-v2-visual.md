@@ -2,7 +2,9 @@
 
 > 版本：v1 ｜ 建立：2026-09-21 ｜ 上一棒：Claude Code（Opus 5）｜ 下一棒：任何 AI 或 Micky
 > 這是**現行接手點**。產品／上架／環境／禁區看 `HANDOFF-2026-09-20-utuvo-panel.md`（仍然有效，只有「面板長相」那部分被本檔取代）。
-> 狀態：程式面已完成並自驗（commit `6907848`＋`a60686a`，**未 push**）；**卡 Micky 三件**：要不要 push、要不要為了這版重送審、真機目視。
+> 狀態：**1.0 (build 5) 已送審**（WAITING_FOR_REVIEW，submission `4f51a4c1-d42b-403a-9110-4ac811ce530e`，2026-09-21 07:16 CST）。
+> Micky 09-21 早上決定「裝到我的手機，然後送審」：build 4 的送審已撤回、build 5 已掛上 1.0、App Store 四張截圖已換成 v2 畫面（en-US／zh-Hant 各四張）。
+> 真機 iPhone 17 Pro Max 已裝 1.0 (5) Release 版。releaseType 仍是 **MANUAL**——過審之後要 Micky 親手按發布。
 
 ---
 
@@ -136,15 +138,30 @@ app 預覽看起來一直是對的（那邊 glassEffect 有作用），**只有�
 **順手記一筆**：`Tiles.xcassets` 的 `btn-play/pause/stop/gear` 四顆圓形玻璃鈕 v2 沒有再用（改成 hairline 圓環鈕），
 資產留著沒刪——要換回玻璃鈕只要把 `RingButton` 換回 `Image(name)` 就好。
 
-## 6. 卡 Micky（只有他能做）
+## 6. 送審紀錄（2026-09-21 早上）
 
-1. **真機目視**：模擬器拿不到未模糊的桌布原檔，透明對齊與玻璃質感最後還是要在 17 Pro Max 上看。
-2. **要不要重送審**：build 4 還在 WAITING_FOR_REVIEW。三條路——
-   (a) 等審完再出 1.0.1；(b) 撤回送審、bump build 重送（會重新排隊）；(c) 先不動，等他真機看過再決定。
-   **沒有他點頭不准動 ASC。**
-3. icon 顏色（沿用 09-20 handoff 的未決事項）。
+| 步驟 | 結果 |
+|---|---|
+| bump build 5 | `f01602f`（兩個 target 的 `CURRENT_PROJECT_VERSION`） |
+| 真機安裝 | `devicectl` 裝 Release 版到 iPhone 17 Pro Max（`00008150-…`），CFBundleVersion 實查＝5 |
+| Archive → Export | IPA `~/Desktop/utuvo builds/UTUVO-Panel-1.0-5/export/UTUVOPanel.ipa`，SHA `44a6626a3fe0…`（已入 SHA256SUMS）。export 一樣要 `env PATH=/usr/bin:/bin:/usr/sbin:/sbin` |
+| `altool --validate-app` | VERIFY SUCCEEDED, no errors |
+| `altool --upload-app` | 上傳成功；ASC 端 build 5 **VALID** |
+| 截圖 | 6.9" sim 重拍四張（1320×2868）。**刻意不選桌布**，讓面板走預設深藍漸層——跟先前上架那組同一個風格（把 ASC 上舊的四張抓下來對過才決定） |
+| `resubmit.py 5 …` | 撤回 build 4 的送審 → 掛 build 5 → 兩語系各刪四張換四張 → 重新送出 |
+| 獨立覆核 | `GET /v1/appStoreVersions/{VER}?include=build`：1.0 WAITING_FOR_REVIEW、attached build **5** VALID、en-US／zh-Hant 各 4 張 |
 
-## 7. 信心最低清單（誠實條款）
+⚠️ 重送審會**重新排隊**（build 4 原本已排了 3 天）。
+
+## 7. 卡 Micky（只有他能做）
+
+1. **真機目視**：1.0 (5) 已裝在他的 17 Pro Max。請他看：透明背景對齊（不齊就用 app 裡「對齊背景」拖）、
+   新的雙卡與週曆在他自己的桌布上讀不讀得清楚。**桌面上的小工具若還是舊樣子，開一次 app 就會刷新**（app 啟動會 `reloadWidget()`）。
+2. **過審後按發布**：releaseType 是 MANUAL，要他親手按。
+3. **icon 顏色**（沿用 09-20 handoff 的未決事項）。
+4. **退件的話**先看理由再動手；最可能仍是 5.2.5（五顆磚像 Apple 自家 icon），備案見 09-20 handoff §6。
+
+## 8. 信心最低清單（誠實條款）
 
 - **Clear／tinted 桌面（accented 模式）**：結構跟 v1 相同（白墨、只留 rim、磚退回 symbol slab），但**沒有在 sim 上目視過**。
 - **真機 HealthKit 距離**：sim 恆為 0，距離的格式化只在程式碼層驗過，沒跟健康 app 對過數字。
