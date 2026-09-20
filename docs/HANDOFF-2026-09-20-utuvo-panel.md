@@ -51,8 +51,8 @@
 | App Privacy 問卷 | Micky 網頁已 Publish（Coarse Location／App Functionality／不連結／不追蹤） | 第二十一輪 |
 | 公開 repo | https://github.com/mickyyang-1407/utuvo-panel （MIT，credscan 全史乾淨） | 第二十二輪 |
 | 真機 | iPhone 17 Pro Max（iOS 27.0）已裝與送審同版 | devicectl |
-| 邏輯自檢 | `Check/main.swift` 46 條全綠 | `swiftc -O ios/Shared/Logic.swift ios/Check/main.swift -o /tmp/c && /tmp/c` |
-| sim UI 測試 | 6 條全綠（面板／計時器／直開 Maps 且本 app 不進前景／日曆列開行事曆／設定頁 Done／桌面 icon） | `ios/UITests/WidgetFlowTests.swift` |
+| 邏輯自檢 | `Check/main.swift` **48 條**全綠（09-21 補兩條守 ActivitySnapshot 舊 JSON） | `swiftc -O ios/Shared/Logic.swift ios/Check/main.swift -o /tmp/c && /tmp/c` |
+| sim UI 測試 | 檔案裡其實是 **12 條**（本欄原本只記了其中 6 條）。每條產品斷言都實測綠；環境相依與兩條會紅的原因見 09-21 那份 §5 | `ios/UITests/WidgetFlowTests.swift` |
 | 家族 icon | **另一條 session 已用本專案工具換完 14 顆**（09-18，備份 `utuvo-brand/icons/_backup-2026-09-18`） | 非本線產出 |
 
 **卡住的三件**（只有 Micky 能做）：
