@@ -24,7 +24,9 @@ struct AlignView: View {
                 PanelView(data: model.previewData, inWidget: false)
                     .frame(width: p.panel.width, height: p.panel.height)
                     .scaleEffect(s, anchor: .topLeading)
-                    .frame(width: r.width * s, height: r.height * s)
+                    // The full-size panel is larger than this frame; without topLeading SwiftUI centres it,
+                    // so the scaled preview drifted up-left of the yellow outline (bug since 09-16).
+                    .frame(width: r.width * s, height: r.height * s, alignment: .topLeading)
                     .overlay(RoundedRectangle(cornerRadius: 36 * s, style: .continuous)
                         .strokeBorder(Color.yellow, lineWidth: 2))
                     .offset(x: r.x * s, y: r.y * s)
