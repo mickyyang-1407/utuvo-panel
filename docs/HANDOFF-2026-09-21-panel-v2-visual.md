@@ -161,6 +161,25 @@ fail-safe：查不到會印「🚦 Panel 審核狀態今天讀不到」，不會
 四條路徑都用 stub ＋真實壞憑證驗過會紅，並在 launchd 那種乾淨環境（`env -i`）下實跑過。
 **過審／退件之後記得把這段拿掉**，不然每天會一直報已發布的狀態。
 
+## 6b. 1.0.1 進行中：透明小工具 parity（2026-09-21 下午）
+
+Micky 問「為什麼 iScreen 可以有 transparent 選項，我們做不到」→ 查證：**iScreen 也是截圖法**（官方教學、iOS 27 SDK、開源參考三方面佐證，
+細節在 project memory `utuvo-panel-v2-editorial-glass`）。差別只在 UX。Micky：「按照你的建議做成下一版，但是我們現在就先做了」。
+
+- **分支／worktree**：`v1.0.1-transparent` ／ `~/Projects/utuvo-panel-v101`（**本機，未 push**）。main 維持審核中的 1.0 (5)。
+- **票與狀態**（流水線 standard 票：writer ccm3／MiniMax、reviewer AGY／Gemini、orchestrator 親驗真小工具）
+
+| 票 | 內容 | commit | 狀態 |
+|---|---|---|---|
+| 0001 | 系統「編輯小工具」選背景（透明／漸層）＋位置（對齊的位置／頂端／往下一列／往下兩列） | `526e737` | CLOSE |
+| 0002 | 淺／深各一張桌布＋設定頁對不齊提示；補 tile-moon；修對齊背景頁預覽偏移 | `11e1645` | CLOSE |
+
+- **還沒做的**：版號（1.0.1／build 6）、App Store「新功能」文案、新截圖（編輯小工具那張值得放）、送審——等 build 5 審完再說。
+- **順手抓到並修掉的**：
+  - `test11` 座標過時（早上左右對調後點到天氣卡）→ main `ad5b470`＋分支。
+  - 「對齊背景」頁預覽從 09-16 起就對不上黃框（外層 frame 沒寫 alignment）→ main `0a5d3ee`＋分支。**審核中的 build 5 也有這個 bug**。
+- 票檔：分支的 `tickets/0001-*.md`、`tickets/0002-*.md`（含驗收紀錄）；證據：分支的 `docs/evidence-1.0.1/`。
+
 ## 7. 卡 Micky（只有他能做）
 
 1. **真機目視**：1.0 (5) 已裝在他的 17 Pro Max。請他看：透明背景對齊（不齊就用 app 裡「對齊背景」拖）、
