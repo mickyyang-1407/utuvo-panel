@@ -283,7 +283,9 @@ extension WidgetFlowTests {
         let w = scrollToWidget()
         XCTAssertTrue(w.exists)
         let f = w.frame
-        w.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: f.width * 0.6, dy: f.height * 0.22)).tap()
+        // v2 layout (2026-09-21): the date card is the LEFT half of the card row (header 76 pt + cards 150 pt
+        // on a 566-pt panel → 0.15…0.41 of the height). The old (0.6, 0.22) point is now the weather card.
+        w.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: f.width * 0.25, dy: f.height * 0.28)).tap()
         let cal = XCUIApplication(bundleIdentifier: "com.apple.mobilecal")
         let ok = cal.wait(for: .runningForeground, timeout: 10)
         sleep(1); snap("after-calendar-tap")
