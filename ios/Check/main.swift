@@ -125,6 +125,12 @@ do {
     check(round == b, "activity snapshot round-trips with distance")
 }
 
+// MARK: Home Screen grid top matches the two measured phones
+do {
+    check(PanelPlacement(screen: (402, 874), panel: (349.67, 565.67)).defaultTop == 88, "17 Pro grid top 88")
+    check(PanelPlacement(screen: (440, 956), panel: (388, 628)).defaultTop == 94, "17 Pro Max grid top ≈ 93.7 → 94")
+}
+
 // MARK: Mutation probes — flip one thing, expect red
 do {
     // 1. Off-by-scheme: a deep link with the scheme upper-cased is a different URL and must not match.

@@ -372,7 +372,15 @@ struct PanelPlacement: Equatable {
 
     /// Where the panel lands when it is the first item on a page scrolled to the top
     /// (measured: icon grid starts 88 pt down on an 874-pt screen). Used as the default offset.
-    var defaultTop: Double { (screen.height * 0.1007).rounded() }
+    var defaultTop: Double { Self.measured(screen.height, pro: 88, proMax: 93.7).rounded() }
+
+    /// Home Screen grid geometry measured on iOS 27.0 (24A434), icon top edges from real screenshots:
+    ///   iPhone 17 Pro      402 × 874 pt → first row top 88 pt
+    ///   iPhone 17 Pro Max  440 × 956 pt → first row top 93.7 pt
+    /// A single height ratio was 2.3 pt off on the Pro Max, so other heights are interpolated linearly.
+    static func measured(_ height: Double, pro: Double, proMax: Double) -> Double {
+        pro + (height - 874) * (proMax - pro) / (956 - 874)
+    }
     var defaultOffset: Double {
         let range = max(screen.height - panel.height, 1)
         return min(max(defaultTop / range, 0), 1)
