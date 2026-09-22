@@ -1,5 +1,4 @@
 import SwiftUI
-import PhotosUI
 
 /// The app is the settings screen; there is no separate home page (iOS never lets an app send itself to the Home Screen).
 struct RootView: View {
@@ -9,18 +8,24 @@ struct RootView: View {
             .task {
                 await model.refreshHealth()
                 model.refreshStatuses()
+                model.refreshSetup()
             }
     }
 }
 
 struct SettingsView: View {
     @EnvironmentObject private var model: PanelModel
-    @State private var screenshotItem: PhotosPickerItem?
     @State private var applied = false
+    @State private var forceShowSetup = false
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         NavigationStack {
             Form {
+                // One-step guide, hidden once the panel is on the Home Screen; pops back when
+                // "重新看設定步驟" is reset.
+                SetupGuide(forceShow: forceShowSetup)
+
                 Section {
                     PreviewCard()
                         .listRowInsets(EdgeInsets())
@@ -28,27 +33,18 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    PhotosPicker(selection: $screenshotItem, matching: .images) {
-                        if model.screenshot == nil { Row("wallpaper", "選你的桌布（原圖或空桌面截圖）") } else { Row("wallpaper", "換桌布") }
-                    }
-                    if model.screenshot != nil {
-                        NavigationLink { AlignView() } label: {
-                            Row("home", "對齊背景（拖曳面板到小工具的位置）")
-                        }
-                        Button("移除背景", role: .destructive) { model.clearScreenshot() }
-                    }
                     VStack(alignment: .leading, spacing: 4) {
                         Text("暗度 \(Int(model.config.tint * 100))%").font(.subheadline)
                         Slider(value: $model.config.tint, in: 0...0.7)
                     }
+                    if model.setup.allDone && !forceShowSetup {
+                        Button("重新看設定步驟") { forceShowSetup = true }
+                    }
                 } header: {
-                    Text("透明背景")
+                    Text("背景")
                 } footer: {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("iOS 不讓小工具真的透明（iScreen 也一樣要一張桌布）。選你設成桌布的那張原圖就好，會自動裁成面板那一塊；或滑到空白桌面截圖再選。加進桌面後用「對齊背景」拖到位。\n想完全免圖：設定 › 桌面與 App 資料庫 › 圖示樣式選「透明」，系統會把面板變成玻璃。")
-                        if !model.panelSizeIsMeasured {
-                            Text("面板尺寸目前是估的；小工具加進桌面後會回報真實尺寸，之後重新裁一次就準了。")
-                        }
+                        Text("面板直接透出你的桌布，換桌布、桌布輪播都會自動跟著變。長按面板 › 編輯小工具 可以改成漸層背景、加邊框。")
                     }
                 }
 
@@ -74,7 +70,36 @@ struct SettingsView: View {
                         Text("淺色玻璃").tag("light")
                         Text("深色玻璃").tag("dark")
                     } label: { Row("wallpaper", "面板色調") }
+                    Picker(selection: $model.config.bottomLayout) {
+                        Text("逐時天氣").tag("hourly")
+                        Text("行程清單").tag("agenda")
+                        Text("平均分配").tag("spread")
+                    } label: { Row("layout", "下半部") }
                     Stepper(value: $model.config.timerMinutes, in: 1...180) { Row("timer", "計時器 \(model.config.timerMinutes) 分鐘") }
+                }
+
+                Section {
+                    Picker(selection: $model.config.borderStyle) {
+                        Text("無").tag("none")
+                        Text("細線").tag("hairline")
+                        Text("粗線").tag("bold")
+                        Text("雙線").tag("double")
+                        Text("虛線").tag("dashed")
+                        Text("光暈").tag("glow")
+                    } label: { Row("border", "樣式") }
+                    Picker(selection: $model.config.borderColor) {
+                        Text("白").tag("white")
+                        Text("黑").tag("black")
+                        Text("跟文字一樣").tag("ink")
+                        Text("珊瑚紅").tag("coral")
+                        Text("香檳金").tag("gold")
+                        Text("天藍").tag("sky")
+                    } label: { Row("palette", "顏色") }
+                    .disabled(model.config.borderStyle == "none")
+                } header: {
+                    Text("邊框")
+                } footer: {
+                    Text("桌面上每個面板都會用這裡的邊框；想讓某一個不一樣，長按它 › 編輯小工具 單獨改。")
                 }
 
                 Section {
@@ -109,16 +134,6 @@ struct SettingsView: View {
                     row("location", "定位（天氣）", model.locationStatus) { model.requestLocation() }
                     row("health", "健康（活動）", model.healthStatus) { model.requestHealth() }
                 }
-
-                Section("加到桌面") {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("1. 長按桌面空白處 → 左上「編輯」→「加入小工具」")
-                        Text("2. 搜尋「UTUVO Panel」")
-                        Text("3. 選最高的那個（iOS 27 特大直式），放到空白頁")
-                        Text("4. 面板右上角的齒輪會回到這裡")
-                    }
-                    .font(.subheadline)
-                }
             }
             .navigationTitle("UTUVO Panel")
             .toolbar {
@@ -142,12 +157,10 @@ struct SettingsView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-            .onChange(of: screenshotItem) { _, item in
-                guard let item else { return }
-                Task {
-                    if let data = try? await item.loadTransferable(type: Data.self) { model.setScreenshot(data) }
-                    screenshotItem = nil
-                }
+            .onChange(of: scenePhase) { _, phase in
+                // User typically edits the widget on Home Screen and returns; re-read the configuration
+                // state to refresh the check mark in the setup guide as soon as we come back.
+                if phase == .active { model.refreshSetup() }
             }
         }
     }

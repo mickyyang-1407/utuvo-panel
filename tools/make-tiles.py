@@ -119,12 +119,16 @@ TILES = {
     "tile-timer":     tile("orange", sf("timer", 0.66)),
     "tile-grid":      tile("indigo", sf("square.grid.2x2.fill", 0.62)),
     "tile-wallpaper": tile("teal", sf("photo.fill", 0.68)),
+    "tile-moon":      tile("indigo", sf("moon.fill", 0.62)),       # settings: Dark Mode wallpaper (1.0.1)
     "tile-home":      tile("green", sf("apps.iphone", 0.62)),
     "tile-seconds":   tile("orange", inked("stopwatch.fill", 0.64, (249, 112, 0), 0),
                            sf("stopwatch.fill", 0.64, WHITE, layer=2)),
     "tile-text":      tile("yellow", sf("textformat", 0.68)),
     "tile-location":  tile("blue", sf("location.fill", 0.56)),
     "tile-health":    tile("white", sf("heart.fill", 0.62, (255, 45, 85), transl=0.15)),
+    "tile-border":    tile("pink", sf("square.dashed", 0.66)),
+    "tile-palette":   tile("purple", sf("paintpalette.fill", 0.64)),
+    "tile-layout":    tile("teal", sf("rectangle.split.1x2.fill", 0.62)),
     # ── system row (shown at 26 pt) ───────────────────────────────────────────────────
     "tile-cpu":       tile("violet", sf("cpu.fill", 0.68)),
     "tile-memory":    tile("purple", sf("memorychip.fill", 0.72)),

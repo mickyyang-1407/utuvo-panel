@@ -1198,6 +1198,557 @@
           }
         }
       }
+    },
+    "面板設定": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Panel settings"
+          }
+        }
+      }
+    },
+    "選背景與位置": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the background and position"
+          }
+        }
+      }
+    },
+    "背景": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Background"
+          }
+        }
+      }
+    },
+    "位置": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Position"
+          }
+        }
+      }
+    },
+    "透明（用你的桌布）": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transparent (your wallpaper)"
+          }
+        }
+      }
+    },
+    "漸層": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gradient"
+          }
+        }
+      }
+    },
+    "在 app 裡對齊的位置": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where you aligned it in the app"
+          }
+        }
+      }
+    },
+    "頁面頂端": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Top of the page"
+          }
+        }
+      }
+    },
+    "往下一列": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One row down"
+          }
+        }
+      }
+    },
+    "往下兩列": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two rows down"
+          }
+        }
+      }
+    },
+    "深色模式的桌布（選填）": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dark Mode wallpaper (optional)"
+          }
+        }
+      }
+    },
+    "換深色桌布": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change Dark Mode wallpaper"
+          }
+        }
+      }
+    },
+    "移除深色桌布": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Dark Mode wallpaper"
+          }
+        }
+      }
+    },
+    "iOS 不讓小工具真的透明，iScreen 也是用一張桌布截圖。選你設成桌布的那張原圖，或滑到空白桌面截圖再選，會自動裁成面板那一塊。\n位置可以在這裡「對齊背景」拖，或長按小工具 › 編輯小工具 › 位置 直接選。\n深色模式下 iOS 會把桌布調暗：想完全對上，切到深色模式再截一次空白頁，放進「深色模式的桌布」。\n對不齊？到 設定 › 桌布 › 主畫面預覽 關掉「透視縮放」，設定 › 螢幕顯示與亮度 › 顯示縮放 選「預設」，再重新截圖。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iOS doesn’t let widgets be truly transparent — iScreen uses a wallpaper screenshot too. Pick the photo you use as wallpaper, or a screenshot of an empty Home Screen page, and it’s cropped to the panel automatically.\nSet the position here with Align Background, or long-press the widget › Edit Widget › Position.\nIn Dark Mode iOS dims the wallpaper: for an exact match, switch to Dark Mode, screenshot an empty page again and add it under Dark Mode wallpaper.\nNot lining up? In Settings › Wallpaper › Home Screen preview turn off Perspective Zoom, set Settings › Display & Brightness › Display Zoom to Default, then take the screenshot again."
+          }
+        }
+      }
+    },
+    "三步驟設定": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Three-step setup"
+          }
+        }
+      }
+    },
+    "三步都做完後這裡會自動收起來，要再看到設定底下「透明背景」裡的連結。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When all three are done, this section collapses on its own. To see it again later, tap “Show setup steps again” under Transparent Background."
+          }
+        }
+      }
+    },
+    "把面板加到桌面": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add the panel to your Home Screen"
+          }
+        }
+      }
+    },
+    "長按桌面空白處 › 左上「編輯」› 加入小工具 › 搜尋 UTUVO Panel › 選最高的尺寸": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch and hold an empty spot › Edit › Add Widget › search UTUVO Panel › pick the tallest size"
+          }
+        }
+      }
+    },
+    "截一張空白桌面，交給 app": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screenshot an empty Home Screen page"
+          }
+        }
+      }
+    },
+    "長按桌面讓圖示抖動 › 往左滑到最後的空白頁 › 側邊按鈕＋音量上截圖。桌布是自己的照片就直接選那張": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch and hold until the icons jiggle › swipe to the empty page at the end › press the side button and volume up. If your wallpaper is your own photo, just pick that photo."
+          }
+        }
+      }
+    },
+    "告訴面板它在哪裡": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tell the panel where it sits"
+          }
+        }
+      }
+    },
+    "長按面板 › 編輯小工具 › 背景選「透明」；面板在最上面就選「頁面頂端」，上面有一排 app 就選「往下一列」": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Touch and hold the panel › Edit Widget › Background: Transparent. Position: Top of the page if nothing is above it, One row down if a row of apps is above it."
+          }
+        }
+      }
+    },
+    "選你的桌布（截圖或照片）": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose your wallpaper (screenshot or photo)"
+          }
+        }
+      }
+    },
+    "或在 app 裡拖著對齊": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Or drag it into place in the app"
+          }
+        }
+      }
+    },
+    "你選了漸層背景，不需要桌布": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You chose the gradient background — no wallpaper needed."
+          }
+        }
+      }
+    },
+    "重新看設定步驟": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show setup steps again"
+          }
+        }
+      }
+    },
+    "桌布會輪播、或不想截圖？長按桌面 › 左上「編輯」› 自訂 › 選「清透」。面板會變成真的透明玻璃，桌布換成什麼都跟著變，不用做第 2、3 步（文字會變白色，app 圖示保留原色）。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wallpaper on shuffle, or don't want a screenshot? Touch and hold the Home Screen › Edit › Customize › Clear. The panel becomes real glass that follows whatever wallpaper is showing — skip steps 2 and 3 (text turns white; app icons keep their colours)."
+          }
+        }
+      }
+    },
+    "邊框": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Border"
+          }
+        }
+      }
+    },
+    "邊框顏色": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Border colour"
+          }
+        }
+      }
+    },
+    "無": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None"
+          }
+        }
+      }
+    },
+    "細線": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hairline"
+          }
+        }
+      }
+    },
+    "粗線": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bold"
+          }
+        }
+      }
+    },
+    "雙線": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double"
+          }
+        }
+      }
+    },
+    "虛線": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashed"
+          }
+        }
+      }
+    },
+    "光暈": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glow"
+          }
+        }
+      }
+    },
+    "白": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "White"
+          }
+        }
+      }
+    },
+    "黑": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Black"
+          }
+        }
+      }
+    },
+    "跟文字一樣": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Match text"
+          }
+        }
+      }
+    },
+    "珊瑚紅": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coral"
+          }
+        }
+      }
+    },
+    "香檳金": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Champagne"
+          }
+        }
+      }
+    },
+    "天藍": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sky"
+          }
+        }
+      }
+    },
+    "想換漸層背景或加邊框：長按面板 › 編輯小工具": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For a gradient background or a border: touch and hold the panel › Edit Widget"
+          }
+        }
+      }
+    },
+    "面板直接透出你的桌布，換桌布、桌布輪播都會自動跟著變。長按面板 › 編輯小工具 可以改成漸層背景、加邊框。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The panel shows your wallpaper straight through — change it or use shuffle and it follows. Touch and hold the panel › Edit Widget for a gradient background or a border."
+          }
+        }
+      }
+    },
+    "樣式": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Style"
+          }
+        }
+      }
+    },
+    "顏色": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colour"
+          }
+        }
+      }
+    },
+    "跟 app 設定一樣": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Same as app settings"
+          }
+        }
+      }
+    },
+    "桌面上每個面板都會用這裡的邊框；想讓某一個不一樣，長按它 › 編輯小工具 單獨改。": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every Panel widget on the Home Screen uses this border. To make one different, long-press it › Edit Widget and change it there."
+          }
+        }
+      }
+    },
+    "下半部": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bottom section"
+          }
+        }
+      }
+    },
+    "逐時天氣": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hourly weather"
+          }
+        }
+      }
+    },
+    "行程清單": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agenda"
+          }
+        }
+      }
+    },
+    "平均分配": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Even spacing"
+          }
+        }
+      }
     }
   }
 }

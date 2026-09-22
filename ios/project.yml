@@ -49,18 +49,27 @@ targets:
         PRODUCT_NAME: UTUVOPanel
         ASSETCATALOG_COMPILER_APPICON_NAME: UTUVOPanel
         TARGETED_DEVICE_FAMILY: "1"
-        MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "5"
+        MARKETING_VERSION: "1.0.1"
+        CURRENT_PROJECT_VERSION: "6"
   PanelWidget:
     type: app-extension
     platform: iOS
     sources:
       - path: PanelWidget
       - path: Shared
+    # Stages a writable copy of the SDK WidgetKit framework with the preferredBackgroundStyle SPI
+    # declarations appended (see tools/make-widgetkit-spi.sh). FRAMEWORK_SEARCH_PATHS below puts
+    # that copy ahead of the system one so the swiftinterface parser sees the symbols.
+    preBuildScripts:
+      - name: WidgetKit SPI interface
+        basedOnDependencyAnalysis: false
+        script: |
+          "$SRCROOT/../tools/make-widgetkit-spi.sh" "$SDKROOT" "$PROJECT_TEMP_DIR/WidgetKitSPI/$PLATFORM_NAME"
     entitlements:
       path: PanelWidget/PanelWidget.entitlements
       properties:
         com.apple.security.application-groups: [group.com.utuvo.panel]
+        com.apple.developer.healthkit: true
     info:
       path: PanelWidget/Info.plist
       properties:
@@ -75,9 +84,13 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.panel.widget
         PRODUCT_NAME: PanelWidget
         TARGETED_DEVICE_FAMILY: "1"
-        MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "5"
+        MARKETING_VERSION: "1.0.1"
+        CURRENT_PROJECT_VERSION: "6"
         SKIP_INSTALL: "YES"
+        # The preBuildScript writes to PROJECT_TEMP_DIR, which the sandbox forbids without
+        # this knob. Prefer the staging dir the script already creates.
+        ENABLE_USER_SCRIPT_SANDBOXING: "NO"
+        FRAMEWORK_SEARCH_PATHS: ["$(inherited)", "$(PROJECT_TEMP_DIR)/WidgetKitSPI/$(PLATFORM_NAME)"]
   UTUVOPanelUITests:
     type: bundle.ui-testing
     platform: iOS

@@ -20,6 +20,7 @@
 		6E6B8D0838CBDDA6DB5DDA4C /* SystemStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F270C790FB75846AD96C78 /* SystemStats.swift */; };
 		78397D03783048580D7870AE /* Logic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3E69F7EC92364B196BB7EE /* Logic.swift */; };
 		810EAB9FBD1812159E094E24 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = EDD6FC426B20EFADB4731D9C /* Localizable.xcstrings */; };
+		922801FF6C3DB56D6B6C89B7 /* HealthReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83584303FBAA4C056B6C029B /* HealthReader.swift */; };
 		9DA5883F15DE9EBA66C67358 /* UTUVOPanelApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 576EC5F7D63B9C721A13DDAB /* UTUVOPanelApp.swift */; };
 		9FE4C4114E16BE7EAF016C15 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D62E4DC75EE413732C481F96 /* PrivacyInfo.xcprivacy */; };
 		C62778DDF8FCBAF40074C6F8 /* Intents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A1B5D6B3F3A6F5A3ACF5E2C /* Intents.swift */; };
@@ -27,7 +28,9 @@
 		D204CAEE67528266B8C19753 /* PanelWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = B86D5CF2ED569864D7073A9D /* PanelWidget.swift */; };
 		DCAF36B3B05904914012C1FC /* PanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AC22E5A135D41E8B89C4A9 /* PanelView.swift */; };
 		DE0836E2D424FF1B37B7F458 /* WidgetFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B6F8ACFBEE32035C799CC97 /* WidgetFlowTests.swift */; };
+		E28D35246E0295600FF6415D /* HealthReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83584303FBAA4C056B6C029B /* HealthReader.swift */; };
 		F4090AAF58FB02EF16C13D6F /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D62E4DC75EE413732C481F96 /* PrivacyInfo.xcprivacy */; };
+		FBE4F9C7EB1A7364F475D153 /* SetupGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFDB65C3E8ACFF7F47D8583 /* SetupGuide.swift */; };
 		FC0809D43FC30A5F58E172EE /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = EDD6FC426B20EFADB4731D9C /* Localizable.xcstrings */; };
 		FCDF771CD0B3628587458751 /* Tiles.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 79C57387C9E4A2A9052B4ADB /* Tiles.xcassets */; };
 /* End PBXBuildFile section */
@@ -72,12 +75,14 @@
 		1E9DA7BBD3B2D804F2F5811C /* UTUVOPanelUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = UTUVOPanelUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		23922C84EEE32F34453F81D3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		2D33976F370F3B55930E7E6A /* UTUVOPanel.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = UTUVOPanel.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3AFDB65C3E8ACFF7F47D8583 /* SetupGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupGuide.swift; sourceTree = "<group>"; };
 		415A3D39D6176E1AA77F35D6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4A1B5D6B3F3A6F5A3ACF5E2C /* Intents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Intents.swift; sourceTree = "<group>"; };
 		4A3E69F7EC92364B196BB7EE /* Logic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logic.swift; sourceTree = "<group>"; };
 		576EC5F7D63B9C721A13DDAB /* UTUVOPanelApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTUVOPanelApp.swift; sourceTree = "<group>"; };
 		746E0C76525C20B9467572F4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		79C57387C9E4A2A9052B4ADB /* Tiles.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Tiles.xcassets; sourceTree = "<group>"; };
+		83584303FBAA4C056B6C029B /* HealthReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReader.swift; sourceTree = "<group>"; };
 		85C0F01B7FB335404E838C44 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A288DFE1F448A8EDFDA311B3 /* UTUVOPanel.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = UTUVOPanel.icon; sourceTree = "<group>"; };
 		B081956EAACDE0F2660E19FF /* UTUVOPanel.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UTUVOPanel.entitlements; sourceTree = "<group>"; };
@@ -113,6 +118,7 @@
 		59C945CE940558A38B22FBE7 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				83584303FBAA4C056B6C029B /* HealthReader.swift */,
 				4A1B5D6B3F3A6F5A3ACF5E2C /* Intents.swift */,
 				EDD6FC426B20EFADB4731D9C /* Localizable.xcstrings */,
 				4A3E69F7EC92364B196BB7EE /* Logic.swift */,
@@ -138,6 +144,7 @@
 			children = (
 				04B78A9CFD368972E867FDAB /* AlignView.swift */,
 				23922C84EEE32F34453F81D3 /* RootView.swift */,
+				3AFDB65C3E8ACFF7F47D8583 /* SetupGuide.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -226,6 +233,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2A1D388B50568E55B30855A1 /* Build configuration list for PBXNativeTarget "PanelWidget" */;
 			buildPhases = (
+				F9CCACD0119077133A9FAEF0 /* WidgetKit SPI interface */,
 				6C6D654028069BB2CFAC3D21 /* Sources */,
 				DBB4B330674DFA6B3DDE0DF1 /* Resources */,
 			);
@@ -311,17 +319,41 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		F9CCACD0119077133A9FAEF0 /* WidgetKit SPI interface */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "WidgetKit SPI interface";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/../tools/make-widgetkit-spi.sh\" \"$SDKROOT\" \"$PROJECT_TEMP_DIR/WidgetKitSPI/$PLATFORM_NAME\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		6206093D3F6CFE6DD536A656 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				C66DC46A12A79B30B76561EB /* AlignView.swift in Sources */,
+				E28D35246E0295600FF6415D /* HealthReader.swift in Sources */,
 				0388C5D6F2CFB49CB773EBD4 /* Intents.swift in Sources */,
 				78397D03783048580D7870AE /* Logic.swift in Sources */,
 				14FABBE19AD6DBFD2B4FA168 /* PanelModel.swift in Sources */,
 				DCAF36B3B05904914012C1FC /* PanelView.swift in Sources */,
 				6C63DA0F3FF94C43D2A7AC6D /* RootView.swift in Sources */,
+				FBE4F9C7EB1A7364F475D153 /* SetupGuide.swift in Sources */,
 				07A788963E90BB304F07E924 /* SystemStats.swift in Sources */,
 				9DA5883F15DE9EBA66C67358 /* UTUVOPanelApp.swift in Sources */,
 			);
@@ -331,6 +363,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				922801FF6C3DB56D6B6C89B7 /* HealthReader.swift in Sources */,
 				C62778DDF8FCBAF40074C6F8 /* Intents.swift in Sources */,
 				10F822FBDF9D8DAB608240CC /* Logic.swift in Sources */,
 				132CF7ED63C02840BF208996 /* PanelView.swift in Sources */,
@@ -452,13 +485,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = UTUVOPanel;
 				CODE_SIGN_ENTITLEMENTS = UTUVOPanel/UTUVOPanel.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				INFOPLIST_FILE = UTUVOPanel/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.panel;
 				PRODUCT_NAME = UTUVOPanel;
 				SDKROOT = iphoneos;
@@ -470,14 +503,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = PanelWidget/PanelWidget.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_TEMP_DIR)/WidgetKitSPI/$(PLATFORM_NAME)",
+				);
 				INFOPLIST_FILE = PanelWidget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.panel.widget;
 				PRODUCT_NAME = PanelWidget;
 				SDKROOT = iphoneos;
@@ -492,13 +530,13 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = UTUVOPanel;
 				CODE_SIGN_ENTITLEMENTS = UTUVOPanel/UTUVOPanel.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				INFOPLIST_FILE = UTUVOPanel/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.panel;
 				PRODUCT_NAME = UTUVOPanel;
 				SDKROOT = iphoneos;
@@ -569,14 +607,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = PanelWidget/PanelWidget.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_TEMP_DIR)/WidgetKitSPI/$(PLATFORM_NAME)",
+				);
 				INFOPLIST_FILE = PanelWidget/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.panel.widget;
 				PRODUCT_NAME = PanelWidget;
 				SDKROOT = iphoneos;

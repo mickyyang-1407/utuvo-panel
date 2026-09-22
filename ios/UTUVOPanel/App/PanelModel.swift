@@ -14,10 +14,16 @@ final class PanelModel: NSObject, ObservableObject {
         didSet { if config != oldValue { config.save(); reloadWidget() } }
     }
     @Published private(set) var screenshot: UIImage?
+    @Published private(set) var screenshotDark: UIImage?
     @Published private(set) var background: UIImage?
+    @Published private(set) var backgroundDark: UIImage?
     /// Cached so the preview does not re-measure the crop on every redraw.
     private(set) var backgroundLuma: Double?
+    private(set) var backgroundLumaDark: Double?
     @Published private(set) var activity: ActivitySnapshot?
+    /// One-step onboarding banner state (above the preview). Refreshed via `refreshSetup()` —
+    /// on `.task`, every `scenePhase` change back to `.active`, and after screenshot changes.
+    @Published private(set) var setup: SetupProgress = SetupProgress(widgetPlaced: false)
     /// Settings sheet; the widget's gear deep link opens it directly.
     @Published var showSettings = false
 
@@ -37,9 +43,26 @@ final class PanelModel: NSObject, ObservableObject {
         screenshot = UIImage(contentsOfFile: screenshotURL.path)
         background = UIImage(contentsOfFile: Shared.backgroundURL.path)
         backgroundLuma = background?.averageLuminance
+        screenshotDark = UIImage(contentsOfFile: Shared.screenshotDarkURL.path)
+        backgroundDark = UIImage(contentsOfFile: Shared.backgroundDarkURL.path)
+        backgroundLumaDark = backgroundDark?.averageLuminance
         activity = Shared.defaults.codable(ActivitySnapshot.self, forKey: Shared.Key.activity)
         location.delegate = self
         refreshStatuses()
+        migrateScreenshotIntoSharedContainer()
+    }
+
+    /// One-time: any device that already has Documents/screenshot.jpg but no shared
+    /// panel-screenshot.jpg gets the JPEG and the matching screenPoints written to the
+    /// app group so the widget's transparent/top/row1/row2 choices have something to crop.
+    private func migrateScreenshotIntoSharedContainer() {
+        guard FileManager.default.fileExists(atPath: screenshotURL.path),
+              !FileManager.default.fileExists(atPath: Shared.screenshotURL.path)
+        else { return }
+        let s = Self.screenSize
+        try? FileManager.default.copyItem(at: screenshotURL, to: Shared.screenshotURL)
+        Shared.defaults.set([Double(s.width), Double(s.height)], forKey: Shared.Key.screenPoints)
+        reloadWidget()
     }
 
     // MARK: Widget
@@ -48,14 +71,45 @@ final class PanelModel: NSObject, ObservableObject {
         WidgetCenter.shared.reloadTimelines(ofKind: Shared.widgetKind)
     }
 
+    /// Reads every configured Panel widget from WidgetCenter and recomputes the one-step banner.
+    /// Caller-driven (`.task`, scenePhase → .active, screenshot change).
+    func refreshSetup() {
+        Task { [weak self] in
+            let info = (try? await WidgetCenter.shared.currentConfigurations()) ?? []
+            var backgrounds: [String] = []
+            for i in info where i.kind == Shared.widgetKind {
+                let intent = i.widgetConfigurationIntent(of: PanelWidgetIntent.self)
+                let bg = intent?.backgroundValue ?? PanelWidgetIntent.backgroundDefault
+                backgrounds.append(bg.rawValue)
+            }
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                // widgetSlots / hasScreenshot / offsetMoved are ignored by SetupProgress now;
+                // pass empty / false to keep the call shape stable.
+                self.setup = SetupProgress.compute(
+                    widgetBackgrounds: backgrounds,
+                    widgetSlots: [],
+                    hasScreenshot: self.screenshot != nil,
+                    offsetMoved: false
+                )
+            }
+        }
+    }
+
     var previewData: PanelData {
         var d = PanelData.sample
         d.config = config
         d.background = background
+        d.backgroundDark = backgroundDark
         d.activity = activity ?? d.activity
+        // Real weather (with hourly) once the widget has fetched it; the sample otherwise.
+        if let w = Shared.defaults.codable(WeatherSnapshot.self, forKey: Shared.Key.weather), !w.hourly.isEmpty { d.weather = w }
         d.timer = TimerState.load()
         d.system = Shared.defaults.codable(SystemSnapshot.self, forKey: Shared.Key.system) ?? d.system
         d.backgroundLuma = backgroundLuma
+        d.backgroundLumaDark = backgroundLumaDark
+        d.borderStyle = config.borderStyle
+        d.borderColor = config.borderColor
         if config.city == nil { d.config.city = "Taipei" }
         return d
     }
@@ -82,40 +136,84 @@ final class PanelModel: NSObject, ObservableObject {
 
     // MARK: Wallpaper
 
-    func setScreenshot(_ data: Data) {
+    func setScreenshot(_ data: Data, dark: Bool = false) {
         guard let picked = UIImage(data: data)?.normalized() else { return }
         // A screenshot is already screen-shaped. A wallpaper *photo* is not: iOS shows it aspect-filled
         // and centred, so reproduce that here and the user never has to take a screenshot.
         let image = picked.aspectFilled(to: Self.screenSize, scale: 3)
         // First image: start from where the widget sits as the first item on a page (measured 88 pt down).
-        if screenshot == nil { config.backgroundOffset = placement.defaultOffset }
-        screenshot = image
-        try? image.jpegData(compressionQuality: 0.95)?.write(to: screenshotURL, options: .atomic)
+        if !dark, screenshot == nil { config.backgroundOffset = placement.defaultOffset }
+        if dark {
+            screenshotDark = image
+            // Dark variant lives only in the shared container — the app preview reads it via `backgroundDark`.
+            try? image.jpegData(compressionQuality: 0.95)?.write(to: Shared.screenshotDarkURL, options: .atomic)
+            let s = Self.screenSize
+            Shared.defaults.set([Double(s.width), Double(s.height)], forKey: Shared.Key.screenPoints)
+        } else {
+            screenshot = image
+            try? image.jpegData(compressionQuality: 0.95)?.write(to: screenshotURL, options: .atomic)
+            // Same JPEG goes to the shared app-group container so the widget can crop a region out
+            // when the user picks "Top of the page" / "One row down" / "Two rows down" in the Edit Widget sheet.
+            try? image.jpegData(compressionQuality: 0.95)?.write(to: Shared.screenshotURL, options: .atomic)
+            let s = Self.screenSize
+            Shared.defaults.set([Double(s.width), Double(s.height)], forKey: Shared.Key.screenPoints)
+        }
         recrop()
+        refreshSetup()
     }
 
     func clearScreenshot() {
         screenshot = nil
+        screenshotDark = nil
         background = nil
+        backgroundDark = nil
         backgroundLuma = nil
+        backgroundLumaDark = nil
         try? FileManager.default.removeItem(at: screenshotURL)
         try? FileManager.default.removeItem(at: Shared.backgroundURL)
+        try? FileManager.default.removeItem(at: Shared.screenshotURL)
+        try? FileManager.default.removeItem(at: Shared.backgroundDarkURL)
+        try? FileManager.default.removeItem(at: Shared.screenshotDarkURL)
+        reloadWidget()
+        refreshSetup()
+    }
+
+    /// Remove only the dark variant — leave the light crop untouched.
+    func clearDarkScreenshot() {
+        screenshotDark = nil
+        backgroundDark = nil
+        backgroundLumaDark = nil
+        try? FileManager.default.removeItem(at: Shared.backgroundDarkURL)
+        try? FileManager.default.removeItem(at: Shared.screenshotDarkURL)
         reloadWidget()
     }
 
     /// Re-cut the panel-sized rectangle out of the screenshot. Called on every offset change.
     func recrop() {
-        guard let shot = screenshot, let cg = shot.cgImage else { return }
-        let p = placement
-        let r = p.rect(offset: config.backgroundOffset)
-        let scale = Double(cg.width) / p.screen.width   // screenshot pixels per point
-        let crop = CGRect(x: r.x * scale, y: r.y * scale, width: r.width * scale, height: r.height * scale)
-            .intersection(CGRect(x: 0, y: 0, width: cg.width, height: cg.height))
-        guard let cut = cg.cropping(to: crop) else { return }
-        let image = UIImage(cgImage: cut)
-        background = image
-        backgroundLuma = image.averageLuminance
-        try? image.jpegData(compressionQuality: 0.9)?.write(to: Shared.backgroundURL, options: .atomic)
+        if let shot = screenshot, let cg = shot.cgImage {
+            let p = placement
+            let r = p.rect(offset: config.backgroundOffset)
+            let scale = Double(cg.width) / p.screen.width   // screenshot pixels per point
+            let crop = CGRect(x: r.x * scale, y: r.y * scale, width: r.width * scale, height: r.height * scale)
+                .intersection(CGRect(x: 0, y: 0, width: cg.width, height: cg.height))
+            if let cut = cg.cropping(to: crop) {
+                background = UIImage(cgImage: cut)
+                backgroundLuma = background?.averageLuminance
+                try? background?.jpegData(compressionQuality: 0.9)?.write(to: Shared.backgroundURL, options: .atomic)
+            }
+        }
+        if let shot = screenshotDark, let cg = shot.cgImage {
+            let p = placement
+            let r = p.rect(offset: config.backgroundOffset)
+            let scale = Double(cg.width) / p.screen.width   // screenshot pixels per point
+            let crop = CGRect(x: r.x * scale, y: r.y * scale, width: r.width * scale, height: r.height * scale)
+                .intersection(CGRect(x: 0, y: 0, width: cg.width, height: cg.height))
+            if let cut = cg.cropping(to: crop) {
+                backgroundDark = UIImage(cgImage: cut)
+                backgroundLumaDark = backgroundDark?.averageLuminance
+                try? backgroundDark?.jpegData(compressionQuality: 0.9)?.write(to: Shared.backgroundDarkURL, options: .atomic)
+            }
+        }
         reloadWidget()
     }
 
@@ -166,64 +264,16 @@ final class PanelModel: NSObject, ObservableObject {
 
     func requestHealth() {
         guard HKHealthStore.isHealthDataAvailable() else { refreshStatuses(); return }
-        let read: Set<HKObjectType> = [
-            HKQuantityType(.stepCount),
-            HKQuantityType(.distanceWalkingRunning),
-            HKQuantityType(.activeEnergyBurned),
-            HKQuantityType(.appleExerciseTime),
-            HKQuantityType(.appleStandTime),
-            HKObjectType.activitySummaryType(),
-        ]
-        health.requestAuthorization(toShare: [], read: read) { [weak self] _, _ in
+        health.requestAuthorization(toShare: [], read: HealthReader.readTypes) { [weak self] _, _ in
             Task { @MainActor in await self?.refreshHealth() }
         }
     }
 
     func refreshHealth() async {
-        guard HKHealthStore.isHealthDataAvailable() else { return }
-        var snap = activity ?? ActivitySnapshot()
-        snap.day = Date()
-        let cal = Calendar.current
-        let start = cal.startOfDay(for: Date())
-
-        // Steps: cumulative sum for today.
-        let steps: Double? = await withCheckedContinuation { cont in
-            let pred = HKQuery.predicateForSamples(withStart: start, end: Date())
-            let q = HKStatisticsQuery(quantityType: HKQuantityType(.stepCount), quantitySamplePredicate: pred, options: .cumulativeSum) { _, stats, _ in
-                cont.resume(returning: stats?.sumQuantity()?.doubleValue(for: .count()))
-            }
-            health.execute(q)
-        }
-        if let steps { snap.steps = Int(steps) }
-
-        // Distance walked/run today — the ribbon shows it next to the step count.
-        let distance: Double? = await withCheckedContinuation { cont in
-            let pred = HKQuery.predicateForSamples(withStart: start, end: Date())
-            let q = HKStatisticsQuery(quantityType: HKQuantityType(.distanceWalkingRunning), quantitySamplePredicate: pred, options: .cumulativeSum) { _, stats, _ in
-                cont.resume(returning: stats?.sumQuantity()?.doubleValue(for: .meter()))
-            }
-            health.execute(q)
-        }
-        if let distance { snap.distanceMeters = distance }
-
-        // Rings: today's activity summary carries both totals and goals.
-        let summary: HKActivitySummary? = await withCheckedContinuation { cont in
-            var comps = cal.dateComponents([.year, .month, .day], from: Date())
-            comps.calendar = cal
-            let pred = HKQuery.predicateForActivitySummary(with: comps)
-            let q = HKActivitySummaryQuery(predicate: pred) { _, summaries, _ in
-                cont.resume(returning: summaries?.first)
-            }
-            health.execute(q)
-        }
-        if let s = summary {
-            snap.moveKcal = s.activeEnergyBurned.doubleValue(for: .kilocalorie())
-            snap.moveGoal = max(s.activeEnergyBurnedGoal.doubleValue(for: .kilocalorie()), 1)
-            snap.exerciseMinutes = Int(s.appleExerciseTime.doubleValue(for: .minute()))
-            snap.exerciseGoal = max(s.appleExerciseTimeGoal.doubleValue(for: .minute()), 1)
-            snap.standHours = Int(s.appleStandHours.doubleValue(for: .count()))
-            snap.standGoal = max(s.appleStandHoursGoal.doubleValue(for: .count()), 1)
-        }
+        let now = Date()
+        let fresh = await HealthReader.today(store: health, now: now)
+        // Same `resolve` the widget uses — yesterday's cache never masquerades as today.
+        let snap = ActivitySnapshot.resolve(fresh: fresh, cached: activity, now: now)
         activity = snap
         Shared.defaults.set(codable: snap, forKey: Shared.Key.activity)
         refreshStatuses()

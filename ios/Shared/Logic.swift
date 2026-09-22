@@ -16,6 +16,9 @@ enum Shared {
             ?? FileManager.default.temporaryDirectory
     }
     static var backgroundURL: URL { container.appendingPathComponent("panel-bg.jpg") }
+    static var backgroundDarkURL: URL { container.appendingPathComponent("panel-bg-dark.jpg") }
+    static var screenshotURL: URL { container.appendingPathComponent("panel-screenshot.jpg") }
+    static var screenshotDarkURL: URL { container.appendingPathComponent("panel-screenshot-dark.jpg") }
     static var avatarURL: URL { container.appendingPathComponent("avatar.jpg") }
 
     enum Key {
@@ -25,6 +28,56 @@ enum Shared {
         static let timer = "panel.timer"
         static let displaySize = "panel.displaySize"   // written by the widget provider
         static let system = "panel.system"
+        static let screenPoints = "panel.screenPoints"   // app writes [width, height] in pt
+    }
+}
+
+/// User's selection in the widget's "Edit Widget" sheet. Pure data: both the intent
+/// (PanelSlotChoice) and the geometry (PanelPlacement.top(for:)) read from this.
+enum PanelSlotKind: String, CaseIterable {
+    case custom, top, row1, row2
+
+    /// How many icon rows below the top of the page; nil = use the app's aligned crop.
+    var rowsDown: Int? {
+        switch self {
+        case .custom: return nil
+        case .top:    return 0
+        case .row1:   return 1
+        case .row2:   return 2
+        }
+    }
+}
+
+// MARK: - Background selection (system appearance aware)
+
+/// Which wallpaper crop to draw: 0 = light, 1 = dark. Pure function so Check can exercise every branch.
+enum PanelBackgroundPick {
+    static let light = 0
+    static let dark = 1
+    static func pick(light: Bool, dark: Bool, systemDark: Bool) -> Int {
+        if systemDark, dark { return PanelBackgroundPick.dark }
+        return PanelBackgroundPick.light
+    }
+}
+
+// MARK: - Ink scheme (light glass + dark ink vs dark glass + white ink)
+
+/// Pure decision over the inputs that drive the panel's ink scheme, kept here so Check can pin
+/// every branch. `PanelData.lightScheme` is the only caller.
+enum PanelInkPick {
+    /// True = light glass + dark ink (the reference look); false = dark glass + white ink.
+    /// - `trueTransparent`: wallpaper shows straight through; we don't know its brightness, so
+    ///   the user's explicit pick wins and `auto` collapses to white ink (false).
+    /// - Otherwise: explicit pick wins, `auto` falls back to the measured luminance.
+    static func lightScheme(trueTransparent: Bool, panelScheme: String, effectiveLuma: Double) -> Bool {
+        if trueTransparent {
+            return panelScheme == "light"
+        }
+        switch panelScheme {
+        case "light": return true
+        case "dark": return false
+        default: return effectiveLuma > 0.46
+        }
     }
 }
 
@@ -72,6 +125,16 @@ struct PanelConfig: Codable, Equatable {
     var tint: Double = 0.0
     /// Vertical placement of the panel inside the screenshot, 0 (top) … 1 (bottom).
     var backgroundOffset: Double = 0.286  // = PanelPlacement.defaultOffset on a 17 Pro (88 pt / (874−566)); app resets it on first pick
+    /// Default border style for every Panel widget on the Home Screen. Edit Widget can still
+    /// override this per-instance via `PanelWidgetIntent.border` (case `.app` = follow this).
+    /// Ticket 0008 — same ids as `PanelBorderChoice.rawValue` so the renderer reuses one switch.
+    var borderStyle: String = "none"
+    /// Default border colour; `.ink` follows the current ink, others are hexes. Same id space as `PanelBorderColorChoice`.
+    var borderColor: String = "white"
+    /// How the bottom of an extra-large portrait panel fills its leftover space —
+    /// "hourly" (next 6 hours weather), "agenda" (next 3 events), or "spread" (even gaps).
+    /// The user picks this in the app's settings; systemLarge (`compact == true`) is unaffected.
+    var bottomLayout: String = "hourly"
 
     var latitude: Double?
     var longitude: Double?
@@ -101,6 +164,9 @@ struct PanelConfig: Codable, Equatable {
         launcherIDs = try c.decodeIfPresent([String].self, forKey: .launcherIDs) ?? d.launcherIDs
         tint = try c.decodeIfPresent(Double.self, forKey: .tint) ?? d.tint
         backgroundOffset = try c.decodeIfPresent(Double.self, forKey: .backgroundOffset) ?? d.backgroundOffset
+        borderStyle = try c.decodeIfPresent(String.self, forKey: .borderStyle) ?? d.borderStyle
+        borderColor = try c.decodeIfPresent(String.self, forKey: .borderColor) ?? d.borderColor
+        bottomLayout = try c.decodeIfPresent(String.self, forKey: .bottomLayout) ?? d.bottomLayout
         latitude = try c.decodeIfPresent(Double.self, forKey: .latitude)
         longitude = try c.decodeIfPresent(Double.self, forKey: .longitude)
         city = try c.decodeIfPresent(String.self, forKey: .city)
@@ -198,6 +264,39 @@ struct WeatherSnapshot: Codable, Equatable {
     var code: Int          // WMO weather interpretation code
     var isDay: Bool
     var fetched: Date
+    /// Next ~48 h of hourly data, parsed only when the response had matching-length arrays.
+    /// `HourlyPoint` is a `Date` so the renderer can sort/filter without re-parsing strings.
+    /// Defaults to `[]`; the `init(from:)` below swallows the case where this key was saved
+    /// before ticket 0010, so old caches still decode.
+    var hourly: [HourlyPoint] = []
+
+    /// One hour's weather. Auto-synth works (Codable + Equatable on Date/Double/Int/Bool).
+    struct HourlyPoint: Codable, Equatable {
+        var time: Date
+        var temperature: Double
+        var code: Int
+        var isDay: Bool
+    }
+
+    /// `init(from:)` is written by hand (not synthesized) so a snapshot written before `hourly`
+    /// existed still decodes — synthesized Decodable rejects missing non-optional keys.
+    init(temperature: Double, high: Double, low: Double, code: Int, isDay: Bool,
+         fetched: Date, hourly: [HourlyPoint] = []) {
+        self.temperature = temperature; self.high = high; self.low = low
+        self.code = code; self.isDay = isDay; self.fetched = fetched; self.hourly = hourly
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let d = WeatherSnapshot(temperature: 0, high: 0, low: 0, code: 0, isDay: true, fetched: Date())
+        temperature = try c.decodeIfPresent(Double.self, forKey: .temperature) ?? d.temperature
+        high        = try c.decodeIfPresent(Double.self, forKey: .high)        ?? d.high
+        low         = try c.decodeIfPresent(Double.self, forKey: .low)         ?? d.low
+        code        = try c.decodeIfPresent(Int.self,    forKey: .code)        ?? d.code
+        isDay       = try c.decodeIfPresent(Bool.self,   forKey: .isDay)       ?? d.isDay
+        fetched     = try c.decodeIfPresent(Date.self,   forKey: .fetched)     ?? d.fetched
+        hourly      = try c.decodeIfPresent([HourlyPoint].self, forKey: .hourly) ?? d.hourly
+    }
 
     /// Open-Meteo, no key required.
     static func url(latitude: Double, longitude: Double) -> URL {
@@ -206,8 +305,10 @@ struct WeatherSnapshot: Codable, Equatable {
             .init(name: "latitude", value: String(format: "%.2f", latitude)),
             .init(name: "longitude", value: String(format: "%.2f", longitude)),
             .init(name: "current", value: "temperature_2m,weather_code,is_day"),
+            .init(name: "hourly", value: "temperature_2m,weather_code,is_day"),
             .init(name: "daily", value: "temperature_2m_max,temperature_2m_min"),
-            .init(name: "forecast_days", value: "1"),
+            // 2 days of hourly covers "next 6 whole hours even across midnight".
+            .init(name: "forecast_days", value: "2"),
             .init(name: "timezone", value: "auto"),
         ]
         return c.url!
@@ -223,7 +324,54 @@ struct WeatherSnapshot: Codable, Equatable {
               let lo = (daily["temperature_2m_min"] as? [Double])?.first
         else { return nil }
         let isDay = ((current["is_day"] as? Int) ?? 1) == 1
-        return WeatherSnapshot(temperature: temp, high: hi, low: lo, code: code, isDay: isDay, fetched: now)
+        // Hourly is best-effort: present and aligned → use it; missing or misaligned → []
+        // (we deliberately do NOT return nil here — the current/daily snapshot is still valuable).
+        let hourly: [HourlyPoint] = Self.parseHourly(root: root)
+        return WeatherSnapshot(temperature: temp, high: hi, low: lo, code: code, isDay: isDay,
+                               fetched: now, hourly: hourly)
+    }
+
+    /// Read `hourly.{time,temperature_2m,weather_code,is_day}` from an Open-Meteo response.
+    /// Returns `[]` if any of the arrays is missing or the four aren't the same length
+    /// (the ticket's length-mismatch branch — `nextHours` then falls back to the spread layout).
+    /// Local-time strings `"yyyy-MM-dd'T'HH:mm"` carry no timezone designator; the response's
+    /// `utc_offset_seconds` is what turns them into real `Date` values.
+    private static func parseHourly(root: [String: Any]) -> [HourlyPoint] {
+        guard let h = root["hourly"] as? [String: Any],
+              let times = h["time"] as? [String],
+              let temps = h["temperature_2m"] as? [Double],
+              let codes = h["weather_code"] as? [Int],
+              let days = h["is_day"] as? [Int]
+        else { return [] }
+        guard times.count == temps.count, temps.count == codes.count, codes.count == days.count
+        else { return [] }
+        let offset = (root["utc_offset_seconds"] as? Int) ?? 0
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy-MM-dd'T'HH:mm"
+        fmt.timeZone = TimeZone(identifier: "UTC")
+        fmt.locale = Locale(identifier: "en_US_POSIX")
+        var out: [HourlyPoint] = []
+        out.reserveCapacity(times.count)
+        for i in 0..<times.count {
+            // Parse the local-time string as if it were UTC, then subtract the offset
+            // — what remains is the real UTC instant for that "wall-clock hour".
+            guard let naive = fmt.date(from: times[i]) else { continue }
+            let utc = naive.addingTimeInterval(-Double(offset))
+            out.append(HourlyPoint(time: utc, temperature: temps[i],
+                                   code: codes[i], isDay: days[i] == 1))
+        }
+        return out
+    }
+
+    /// Pure: the first `count` hourly points strictly later than `now`, time-ascending.
+    /// Used by the bottom-of-panel hourly strip; lives in Logic so Check can pin the
+    /// cross-midnight / exact-hour-edge / short-list cases.
+    static func nextHours(_ points: [HourlyPoint], after now: Date, count: Int = 6) -> [HourlyPoint] {
+        return points
+            .filter { $0.time > now }
+            .sorted { $0.time < $1.time }
+            .prefix(count)
+            .map { $0 }
     }
 
     /// SF Symbol → pre-rendered glass tile asset (tools/make-tiles.py `weather` list).
@@ -300,6 +448,22 @@ struct ActivitySnapshot: Codable, Equatable {
     var moveFraction: Double { moveGoal > 0 ? min(moveKcal / moveGoal, 1) : 0 }
     var exerciseFraction: Double { exerciseGoal > 0 ? min(Double(exerciseMinutes) / exerciseGoal, 1) : 0 }
     var standFraction: Double { standGoal > 0 ? min(Double(standHours) / standGoal, 1) : 0 }
+
+    /// What the panel shows:
+    /// - a fresh HealthKit read wins (it came from today);
+    /// - otherwise today's cached snapshot (it was written earlier today);
+    /// - otherwise an empty snapshot dated today.
+    ///
+    /// Yesterday's cache is NEVER shown as today's numbers. The whole reason this function
+    /// exists: `PanelModel.refreshHealth()` used to seed `snap` from `activity ?? .init()`
+    /// and stamp `snap.day = Date()`, so a single failed query would save yesterday's steps
+    /// labelled as today. This `resolve` is the only place the snapshot the user sees is
+    /// chosen, and it refuses to recycle stale data.
+    static func resolve(fresh: ActivitySnapshot?, cached: ActivitySnapshot?, now: Date, calendar: Calendar = .current) -> ActivitySnapshot {
+        if let fresh { return fresh }
+        if let cached, calendar.isDate(cached.day, inSameDayAs: now) { return cached }
+        return ActivitySnapshot(day: now)
+    }
 }
 
 // MARK: - Timer
@@ -341,6 +505,82 @@ struct TimerState: Codable, Equatable {
     }
 }
 
+// MARK: - Panel border (drawn in PanelView, fed by the intent)
+
+/// Bridges `PanelWidgetIntent` (per-instance override) and `PanelConfig` (the app's default).
+/// `intentValue == "app"` → fall through to `appValue`; anything else is treated as an explicit
+/// choice and passed through verbatim (so an unknown string still flows to the renderer, which
+/// already collapses unknown styles to "no border"). Pure function so Check can pin every branch.
+/// The "show seconds" clock is a live day-long system timer (`Text(timerInterval:showsHours:)`), which
+/// renders elapsed time as "H:MM:SS" for ≥ 1 h (hour not padded), "MM:SS" for 10–59 min and "M:SS"
+/// under 10 min — so 00:35:17 used to show "35:17". This is the static text to put in front of it so the
+/// whole reads HH:MM:SS. It only changes at minute boundaries, and the widget has one entry per minute.
+enum ClockPrefix {
+    static func forTime(hour: Int, minute: Int) -> String {
+        if hour >= 10 { return "" }
+        if hour >= 1 { return "0" }
+        return minute >= 10 ? "00:" : "00:0"
+    }
+}
+
+enum PanelBorderPick {
+    static let followsApp = "app"
+    static func resolve(intentValue: String, appValue: String) -> String {
+        intentValue == Self.followsApp ? appValue : intentValue
+    }
+}
+
+/// Geometry for the panel's outer stroke. One shape + one or two `strokeBorder`s; the renderer
+/// (PanelView) reads this struct, not the intent's raw string, so Check can pin every case.
+/// `none` is **not** a spec — the renderer's first check is `from(style:) == nil` and it draws
+/// nothing. Unknown strings also → nil so a config written before this ticket still draws no border.
+struct PanelBorderSpec: Equatable {
+    /// Outer stroke width, in points.
+    var width: Double
+    /// Dash pattern, e.g. [8, 6]. Empty = solid.
+    var dash: [Double]
+    /// `double` only: width of the inner ring. nil = no inner ring.
+    var innerWidth: Double?
+    /// `double` only: inset of the inner ring from the outer one (5 pt in the spec).
+    var innerInset: Double
+    /// `glow` only: radii of the two shadow layers, [r1, r2]. Empty = no glow.
+    var glowRadii: [Double]
+
+    /// Style id (rawValue of `PanelBorderChoice`) → spec. `"none"` or unknown → nil (= no border).
+    static func from(style: String) -> PanelBorderSpec? {
+        switch style {
+        case "hairline": return PanelBorderSpec(width: 1,   dash: [],     innerWidth: nil, innerInset: 0, glowRadii: [])
+        case "bold":     return PanelBorderSpec(width: 3.5, dash: [],     innerWidth: nil, innerInset: 0, glowRadii: [])
+        case "double":   return PanelBorderSpec(width: 2,   dash: [],     innerWidth: 1,   innerInset: 5, glowRadii: [])
+        case "dashed":   return PanelBorderSpec(width: 2,   dash: [8, 6], innerWidth: nil, innerInset: 0, glowRadii: [])
+        case "glow":     return PanelBorderSpec(width: 2,   dash: [],     innerWidth: nil, innerInset: 0, glowRadii: [6, 12])
+        case "none":     return nil
+        default:         return nil
+        }
+    }
+}
+
+// MARK: - Setup progress (SettingsView's one-step banner)
+
+/// Per-panel state as observed from `WidgetCenter.currentConfigurations()`.
+/// Strings only — Logic stays AppIntents-free so Check can exercise every branch.
+///
+/// Ticket 0007: the wallpaper / position steps were killed when true-transparent made them
+/// unnecessary. `allDone` now reduces to one question: has the user placed at least one Panel
+/// widget on the Home Screen? `compute` keeps the same call shape (panel list + flags) so
+/// PanelModel doesn't have to change shape, but only `widgetPlaced` is meaningful.
+struct SetupProgress: Equatable {
+    var widgetPlaced: Bool      // at least one Panel widget on the Home Screen
+
+    var allDone: Bool { widgetPlaced }
+
+    /// widgetBackgrounds: one entry per Panel widget on the Home Screen, rawValue strings
+    /// ("transparent" / "gradient"). The other flags are kept for the same call shape but ignored.
+    static func compute(widgetBackgrounds: [String], widgetSlots: [String], hasScreenshot: Bool, offsetMoved: Bool) -> SetupProgress {
+        return SetupProgress(widgetPlaced: !widgetBackgrounds.isEmpty)
+    }
+}
+
 // MARK: - Calendar event (widget reads EventKit itself; this is the render model)
 
 struct EventInfo: Equatable {
@@ -348,6 +588,29 @@ struct EventInfo: Equatable {
     var start: Date
     var end: Date
     var isAllDay: Bool
+}
+
+/// Pure filter/sort used by `CalendarService.upcoming` and exercised end-to-end by Check.
+/// Lives in Logic so the widget target can call it without importing AppIntents / EventKit —
+/// the rule shape (48-hour window, timed-before-allday at the same start) is a data decision,
+/// not an EventKit decision.
+enum AgendaPick {
+    /// "Upcoming" = ongoing now OR starting within 48 h of `now`. Sorted by start
+    /// (timed beats all-day when they share a start, so a meeting at 09:00 sits above
+    /// an all-day block on the same day), then capped at `limit`.
+    static func pick(_ events: [EventInfo], now: Date, limit: Int) -> [EventInfo] {
+        let cutoff = now.addingTimeInterval(48 * 3600)
+        let kept = events.filter { e in
+            if e.start <= now, now <= e.end { return true }            // ongoing
+            return e.start > now && e.start <= cutoff                  // within 48 h
+        }
+        let sorted = kept.sorted { a, b in
+            if a.start != b.start { return a.start < b.start }
+            if a.isAllDay != b.isAllDay { return !a.isAllDay }
+            return false
+        }
+        return Array(sorted.prefix(limit))
+    }
 }
 
 // MARK: - Background crop geometry
@@ -373,14 +636,6 @@ struct PanelPlacement: Equatable {
     /// Where the panel lands when it is the first item on a page scrolled to the top
     /// (measured: icon grid starts 88 pt down on an 874-pt screen). Used as the default offset.
     var defaultTop: Double { Self.measured(screen.height, pro: 88, proMax: 93.7).rounded() }
-
-    /// Home Screen grid geometry measured on iOS 27.0 (24A434), icon top edges from real screenshots:
-    ///   iPhone 17 Pro      402 × 874 pt → first row top 88 pt
-    ///   iPhone 17 Pro Max  440 × 956 pt → first row top 93.7 pt
-    /// A single height ratio was 2.3 pt off on the Pro Max, so other heights are interpolated linearly.
-    static func measured(_ height: Double, pro: Double, proMax: Double) -> Double {
-        pro + (height - 874) * (proMax - pro) / (956 - 874)
-    }
     var defaultOffset: Double {
         let range = max(screen.height - panel.height, 1)
         return min(max(defaultTop / range, 0), 1)
@@ -394,6 +649,32 @@ struct PanelPlacement: Equatable {
         let x = ((screen.width - panel.width) / 2).rounded()
         let maxY = max(screen.height - panel.height, 0)
         let y = (maxY * o).rounded()
+        return (x, y, panel.width, min(panel.height, screen.height))
+    }
+
+    /// Distance between icon rows on the Home Screen.
+    var rowPitch: Double { Self.measured(screen.height, pro: 100, proMax: 108.6) }
+
+    /// Home Screen grid geometry measured on iOS 27.0 (24A434), icon top edges from real screenshots:
+    ///   iPhone 17 Pro      402 × 874 pt → first row top 88 pt,   row pitch 100 pt
+    ///   iPhone 17 Pro Max  440 × 956 pt → first row top 93.7 pt, row pitch 108.6 pt (both gaps)
+    /// A single height ratio was 2.3 pt off on the Pro Max, so other heights are interpolated linearly
+    /// through these two points instead.
+    static func measured(_ height: Double, pro: Double, proMax: Double) -> Double {
+        pro + (height - 874) * (proMax - pro) / (956 - 874)
+    }
+
+    /// Top edge (in screen points) for a fixed slot, or nil for `custom` (= use the app's aligned crop).
+    func top(for slot: PanelSlotKind) -> Double? {
+        slot.rowsDown.map { (defaultTop + Double($0) * rowPitch).rounded() }
+    }
+
+    /// Crop rect anchored to an explicit top (in screen points). Horizontally centred;
+    /// y clamped so the rect is always inside the screen.
+    func rect(top: Double) -> (x: Double, y: Double, width: Double, height: Double) {
+        let x = ((screen.width - panel.width) / 2).rounded()
+        let maxY = max(screen.height - panel.height, 0)
+        let y = min(max(top.rounded(), 0), maxY)
         return (x, y, panel.width, min(panel.height, screen.height))
     }
 }

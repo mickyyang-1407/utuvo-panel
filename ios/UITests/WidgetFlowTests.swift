@@ -15,33 +15,6 @@ final class WidgetFlowTests: XCTestCase {
         print("=== TREE \(tag) ===\n\(app.debugDescription)\n=== END \(tag) ===")
     }
 
-    /// 1. In the app: pick the synthetic screenshot from Photos so the widget gets a background.
-    func test1_pickScreenshot() {
-        let app = XCUIApplication()
-        app.launch()
-        let pick = app.buttons.matching(NSPredicate(format: "label BEGINSWITH '選你的桌布' OR label == '換桌布' OR label BEGINSWITH 'Choose your wallpaper' OR label == 'Change wallpaper'")).firstMatch
-        XCTAssertTrue(pick.waitForExistence(timeout: 10), "picker button")
-        pick.tap()
-        // PhotosPicker is remote UI; find the first photo cell.
-        let picker = XCUIApplication(bundleIdentifier: "com.apple.mobileslideshow")
-        sleep(3)
-        let images = app.images.matching(NSPredicate(format: "label CONTAINS 'Photo' OR label CONTAINS '照片' OR label CONTAINS 'Screenshot' OR label CONTAINS '截圖'"))
-        if images.firstMatch.waitForExistence(timeout: 8) {
-            images.firstMatch.tap()
-        } else {
-            dump(app, "photos-picker"); dump(picker, "photos-app")
-            // Fallback: tap the first cell in the grid area.
-            let w = app.frame.width, h = app.frame.height
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0)).withOffset(CGVector(dx: w * 0.15, dy: h * 0.3)).tap()
-        }
-        sleep(3)
-        snap("app-after-pick")
-        // The row sits under the panel preview; Form is lazy, so it is not in the tree until scrolled to.
-        app.swipeUp(); sleep(1)
-        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label == '移除背景' OR label == 'Remove background'")).firstMatch.waitForExistence(timeout: 10), "background saved → 移除背景 visible")
-        dump(app, "app-after-pick")
-    }
-
     /// 2. On the home screen: add the extra-large-portrait widget.
     func test2_addWidget() {
         XCUIDevice.shared.press(.home)
@@ -196,45 +169,6 @@ extension WidgetFlowTests {
 }
 
 extension WidgetFlowTests {
-    /// 7a. Screenshot an empty home page (the one before App Library) — the "blank wallpaper" the user would take.
-    func test7a_emptyPageScreenshot() {
-        XCUIDevice.shared.press(.home); sleep(1)
-        for _ in 0..<3 { springboard.swipeRight(); usleep(500_000) }
-        // Walk right until the page has no icons/widgets and no App Library search field.
-        for page in 0..<6 {
-            let icons = springboard.icons.allElementsBoundByIndex.filter { $0.frame.minX >= 0 && $0.frame.maxX <= springboard.frame.width && $0.isHittable }
-            let inLibrary = springboard.searchFields["dewey-search-field"].exists && springboard.searchFields["dewey-search-field"].isHittable
-            print("=== PAGE \(page) icons=\(icons.count) library=\(inLibrary)")
-            if icons.isEmpty && !inLibrary { break }
-            if inLibrary { XCTFail("no empty page before App Library"); return }
-            springboard.swipeLeft(); sleep(1)
-        }
-        sleep(1)
-        snap("empty-page")
-    }
-
-    /// 7b. Pick the newest photo (last in Recents) — the screenshot added by the runner.
-    func test7b_pickNewest() {
-        let app = XCUIApplication()
-        app.launch()
-        let pick = app.buttons.matching(NSPredicate(format: "label BEGINSWITH '選你的桌布' OR label == '換桌布' OR label BEGINSWITH 'Choose your wallpaper' OR label == 'Change wallpaper'")).firstMatch
-        XCTAssertTrue(pick.waitForExistence(timeout: 10))
-        pick.tap()
-        sleep(3)
-        let images = app.images.matching(NSPredicate(format: "label CONTAINS 'Photo' OR label CONTAINS '照片' OR label CONTAINS 'Screenshot' OR label CONTAINS '截圖'"))
-        XCTAssertTrue(images.firstMatch.waitForExistence(timeout: 8))
-        let all = images.allElementsBoundByIndex
-        print("=== PICKER \(all.count) images: \(all.map(\.label))")
-        all.last!.tap()
-        sleep(3)
-        app.swipeUp(); sleep(1)
-        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label == '移除背景' OR label == 'Remove background'")).firstMatch.waitForExistence(timeout: 10),
-                      "background saved (label is localised — do not hard-code the zh string)")
-        snap("app-after-pick-newest")
-    }
-}
-
-extension WidgetFlowTests {
     /// 8. Find the app icon on whatever page it lives and screenshot that page.
     func test8_appIcon() {
         XCUIDevice.shared.press(.home); sleep(1)
@@ -290,5 +224,57 @@ extension WidgetFlowTests {
         let ok = cal.wait(for: .runningForeground, timeout: 10)
         sleep(1); snap("after-calendar-tap")
         XCTAssertTrue(ok, "Calendar came to the foreground")
+    }
+}
+
+extension WidgetFlowTests {
+    /// 12. "Show seconds" clock must always read hh:mm:ss with a two-digit hour — the old day-long
+    /// timer dropped the hour field below 1 h (00:35:17 showed "35:17") and never padded it.
+    func test12_secondsClockKeepsHour() {
+        let app = XCUIApplication(); app.launch(); sleep(3)
+        let toggle = app.switches.matching(NSPredicate(format: "label CONTAINS '時間走秒' OR label CONTAINS 'Show seconds'")).firstMatch
+        for _ in 0..<4 where !toggle.isHittable { app.swipeUp(); sleep(1) }
+        XCTAssertTrue(toggle.exists, "show-seconds switch found")
+        if (toggle.value as? String) != "1" { toggle.switches.firstMatch.exists ? toggle.switches.firstMatch.tap() : toggle.tap() }
+        sleep(1)
+        XCTAssertEqual(toggle.value as? String, "1", "show-seconds is on")
+        let done = app.buttons.matching(NSPredicate(format: "label == 'Done' OR label == '完成'")).firstMatch
+        if done.exists { done.tap() }
+        sleep(4)
+        let ours = scrollToWidget(); sleep(3)
+        snap("seconds-clock")
+        let hour = String(format: "%02d", Calendar.current.component(.hour, from: Date()))
+        // Static ClockPrefix + live day-long timer; together they must read HH:MM:SS.
+        // Old bug: at 00:35:17 the only text was "35:17" (no prefix) → fails the joined check.
+        let texts = ours.descendants(matching: .staticText).allElementsBoundByIndex.map(\.label)
+        let joined = zip(texts, texts.dropFirst()).map { $0 + $1 } + texts
+        let ok = joined.contains { $0.range(of: "^" + hour + ":[0-5][0-9]:[0-5][0-9]$", options: .regularExpression) != nil }
+        if !ok { print("=== TEXTS seconds === \(texts)") }
+        XCTAssertTrue(ok, "clock reads \(hour):MM:SS (texts: \(texts.prefix(4)))")
+    }
+}
+
+extension WidgetFlowTests {
+    /// 13. The three bottom layouts are selectable in Settings and each one renders (preview + widget).
+    func test13_bottomLayouts() {
+        let options = [("hourly", "Hourly weather", "逐時天氣"), ("agenda", "Agenda", "行程清單"), ("spread", "Even spacing", "平均分配")]
+        for (id, en, zh) in options {
+            let app = XCUIApplication(); app.launch(); sleep(2)
+            let picker = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Bottom section' OR label BEGINSWITH '下半部'")).firstMatch
+            for _ in 0..<5 where !picker.isHittable { app.swipeUp(); sleep(1) }
+            XCTAssertTrue(picker.exists, "bottom-section picker found")
+            picker.tap(); sleep(1)
+            let item = app.buttons.matching(NSPredicate(format: "label == %@ OR label == %@", en, zh)).firstMatch
+            XCTAssertTrue(item.waitForExistence(timeout: 3), "option \(en) listed")
+            item.tap(); sleep(1)
+            XCTAssertTrue((picker.label as NSString).contains(en) || (picker.label as NSString).contains(zh), "picker shows \(en), got \(picker.label)")
+            for _ in 0..<6 { app.swipeDown() }
+            sleep(1); snap("layout-preview-\(id)")
+            let done = app.buttons.matching(NSPredicate(format: "label == 'Done' OR label == '完成'")).firstMatch
+            if done.exists { done.tap() }
+            sleep(3)
+            _ = scrollToWidget(); sleep(3)
+            snap("layout-widget-\(id)")
+        }
     }
 }
