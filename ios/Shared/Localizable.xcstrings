@@ -1749,6 +1749,26 @@
           }
         }
       }
+    },
+    "透明": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transparent"
+          }
+        }
+      }
+    },
+    "選背景與邊框": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the background and border"
+          }
+        }
+      }
     }
   }
 }
