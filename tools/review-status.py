@@ -2,7 +2,8 @@
 """One-line App Store review status for the morning brief.
 usage: review-status.py [--format brief]      (env: ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_PATH)
 
-Prints nothing and exits 2 when the app has no version in flight; exits 1 on any API failure so
+Follows the newest App Store version (so 1.0.1 is picked up once it exists). Prints nothing and
+exits 2 when that version is already released (nothing in flight); exits 1 on any API failure so
 the caller can say "讀不到" out loud instead of silently printing nothing.
 """
 import datetime, sys, os
@@ -10,7 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from asc import request
 
 APP = "6812964840"
-VER = "cf1e60dc-8f70-4775-9f80-ddbf01ba5966"
+# Released or not yet submitted → nothing for Micky to watch; stay quiet (exit 2).
+QUIET = {"READY_FOR_DISTRIBUTION", "READY_FOR_SALE", "PREPARE_FOR_SUBMISSION"}
 
 # What each state means for Micky. Anything not listed is surfaced verbatim.
 ACTION = {
@@ -34,12 +36,17 @@ def days_since(iso):
 
 
 def main():
-    st, v = request("GET", f"/v1/appStoreVersions/{VER}?include=build")
-    if st >= 300:
+    st, v = request("GET", f"/v1/apps/{APP}/appStoreVersions?filter[platform]=IOS&include=build&limit=10")
+    if st >= 300 or not v.get("data"):
         raise SystemExit(1)
-    a = v["data"]["attributes"]
+    # Newest first by creation; the API does not sort, so pick by createdDate.
+    newest = max(v["data"], key=lambda d: d["attributes"].get("createdDate") or "")
+    a = newest["attributes"]
     state = a["appVersionState"]
-    build = next((i["attributes"]["version"] for i in v.get("included", []) if i["type"] == "builds"), "—")
+    if state in QUIET:
+        raise SystemExit(2)
+    bid = (newest["relationships"].get("build", {}).get("data") or {}).get("id")
+    build = next((i["attributes"]["version"] for i in v.get("included", []) if i["type"] == "builds" and i["id"] == bid), "—")
 
     st, rs = request("GET", f"/v1/apps/{APP}/reviewSubmissions?filter[state]=WAITING_FOR_REVIEW,IN_REVIEW,UNRESOLVED_ISSUES&limit=1")
     if st >= 300:
