@@ -125,9 +125,10 @@ extension WidgetFlowTests {
 
 
 extension WidgetFlowTests {
-    /// Our widget, not the app icon (same label; only the widget's value says "Widget").
+    /// Our widget, not the app icon (same label; only the widget's value says "Widget" — "小工具" when
+    /// SpringBoard runs in Traditional Chinese).
     private var widgetQuery: XCUIElementQuery {
-        springboard.descendants(matching: .any).matching(NSPredicate(format: "label == 'UTUVO Panel' AND value CONTAINS 'Widget'"))
+        springboard.descendants(matching: .any).matching(NSPredicate(format: "label == 'UTUVO Panel' AND (value CONTAINS 'Widget' OR value CONTAINS '小工具')"))
     }
 
     /// Panels SpringBoard currently exposes — the visible page only (measured: off-screen pages read 0).
@@ -136,7 +137,7 @@ extension WidgetFlowTests {
     private func scrollToWidget() -> XCUIElement {
         XCUIDevice.shared.press(.home); sleep(1)
         springboard.swipeRight(); sleep(1)
-        let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label == 'UTUVO Panel' AND value CONTAINS 'Widget'")).firstMatch
+        let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label == 'UTUVO Panel' AND (value CONTAINS 'Widget' OR value CONTAINS '小工具')")).firstMatch
         var tries = 0
         while tries < 10 {
             guard ours.exists else { springboard.swipeLeft(); sleep(1); tries += 1; continue }
@@ -199,7 +200,7 @@ extension WidgetFlowTests {
     func test8_appIcon() {
         XCUIDevice.shared.press(.home); sleep(1)
         for _ in 0..<3 { springboard.swipeRight(); usleep(400_000) }
-        let icon = springboard.icons.matching(NSPredicate(format: "label == 'UTUVO Panel' AND NOT (value CONTAINS 'Widget')")).firstMatch
+        let icon = springboard.icons.matching(NSPredicate(format: "label == 'UTUVO Panel' AND NOT (value CONTAINS 'Widget' OR value CONTAINS '小工具')")).firstMatch
         for _ in 0..<6 {
             if icon.exists, icon.frame.minX >= 0, icon.frame.maxX <= springboard.frame.width { break }
             springboard.swipeLeft(); sleep(1)
