@@ -15,10 +15,6 @@ enum Shared {
         FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
             ?? FileManager.default.temporaryDirectory
     }
-    static var backgroundURL: URL { container.appendingPathComponent("panel-bg.jpg") }
-    static var backgroundDarkURL: URL { container.appendingPathComponent("panel-bg-dark.jpg") }
-    static var screenshotURL: URL { container.appendingPathComponent("panel-screenshot.jpg") }
-    static var screenshotDarkURL: URL { container.appendingPathComponent("panel-screenshot-dark.jpg") }
     static var avatarURL: URL { container.appendingPathComponent("avatar.jpg") }
 
     enum Key {
@@ -28,35 +24,6 @@ enum Shared {
         static let timer = "panel.timer"
         static let displaySize = "panel.displaySize"   // written by the widget provider
         static let system = "panel.system"
-        static let screenPoints = "panel.screenPoints"   // app writes [width, height] in pt
-    }
-}
-
-/// User's selection in the widget's "Edit Widget" sheet. Pure data: both the intent
-/// (PanelSlotChoice) and the geometry (PanelPlacement.top(for:)) read from this.
-enum PanelSlotKind: String, CaseIterable {
-    case custom, top, row1, row2
-
-    /// How many icon rows below the top of the page; nil = use the app's aligned crop.
-    var rowsDown: Int? {
-        switch self {
-        case .custom: return nil
-        case .top:    return 0
-        case .row1:   return 1
-        case .row2:   return 2
-        }
-    }
-}
-
-// MARK: - Background selection (system appearance aware)
-
-/// Which wallpaper crop to draw: 0 = light, 1 = dark. Pure function so Check can exercise every branch.
-enum PanelBackgroundPick {
-    static let light = 0
-    static let dark = 1
-    static func pick(light: Bool, dark: Bool, systemDark: Bool) -> Int {
-        if systemDark, dark { return PanelBackgroundPick.dark }
-        return PanelBackgroundPick.light
     }
 }
 
@@ -123,8 +90,6 @@ struct PanelConfig: Codable, Equatable {
     var launcherIDs: [String] = ["music", "messages", "maps", "camera", "notes"]
     /// 0 = fully transparent wallpaper, 1 = opaque black.
     var tint: Double = 0.0
-    /// Vertical placement of the panel inside the screenshot, 0 (top) … 1 (bottom).
-    var backgroundOffset: Double = 0.286  // = PanelPlacement.defaultOffset on a 17 Pro (88 pt / (874−566)); app resets it on first pick
     /// Default border style for every Panel widget on the Home Screen. Edit Widget can still
     /// override this per-instance via `PanelWidgetIntent.border` (case `.app` = follow this).
     /// Ticket 0008 — same ids as `PanelBorderChoice.rawValue` so the renderer reuses one switch.
@@ -163,7 +128,6 @@ struct PanelConfig: Codable, Equatable {
         timerMinutes = try c.decodeIfPresent(Int.self, forKey: .timerMinutes) ?? d.timerMinutes
         launcherIDs = try c.decodeIfPresent([String].self, forKey: .launcherIDs) ?? d.launcherIDs
         tint = try c.decodeIfPresent(Double.self, forKey: .tint) ?? d.tint
-        backgroundOffset = try c.decodeIfPresent(Double.self, forKey: .backgroundOffset) ?? d.backgroundOffset
         borderStyle = try c.decodeIfPresent(String.self, forKey: .borderStyle) ?? d.borderStyle
         borderColor = try c.decodeIfPresent(String.self, forKey: .borderColor) ?? d.borderColor
         bottomLayout = try c.decodeIfPresent(String.self, forKey: .bottomLayout) ?? d.bottomLayout
@@ -575,8 +539,8 @@ struct SetupProgress: Equatable {
     var allDone: Bool { widgetPlaced }
 
     /// widgetBackgrounds: one entry per Panel widget on the Home Screen, rawValue strings
-    /// ("transparent" / "gradient"). The other flags are kept for the same call shape but ignored.
-    static func compute(widgetBackgrounds: [String], widgetSlots: [String], hasScreenshot: Bool, offsetMoved: Bool) -> SetupProgress {
+    /// ("transparent" / "gradient").
+    static func compute(widgetBackgrounds: [String]) -> SetupProgress {
         return SetupProgress(widgetPlaced: !widgetBackgrounds.isEmpty)
     }
 }
@@ -613,68 +577,45 @@ enum AgendaPick {
     }
 }
 
-// MARK: - Background crop geometry
+// MARK: - Deadline (ticket 0011)
 
-/// Where the extra-large-portrait panel sits on a full-screen screenshot.
-/// Everything in points; caller multiplies by the screenshot's pixel scale.
-struct PanelPlacement: Equatable {
-    var screen: (width: Double, height: Double)
-    var panel: (width: Double, height: Double)
+/// Resumes a continuation at most once, from whichever side gets there first.
+/// Lock-protected: the two racers usually live on different queues.
+final class OnceResume<T>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<T, Never>?
 
-    static func == (a: PanelPlacement, b: PanelPlacement) -> Bool {
-        a.screen == b.screen && a.panel == b.panel
+    init(_ continuation: CheckedContinuation<T, Never>) { self.continuation = continuation }
+
+    /// True if this call was the one that resumed.
+    @discardableResult
+    func resume(_ value: T) -> Bool {
+        lock.lock()
+        let c = continuation
+        continuation = nil
+        lock.unlock()
+        c?.resume(returning: value)
+        return c != nil
     }
+}
 
-    /// Fallback when the widget has not yet reported its display size.
-    /// Measured on iPhone 17 Pro / iOS 27.0 (24A434): displaySize 349.67 × 565.67 on a 402-pt screen,
-    /// i.e. 26 pt side margins and a 1.618 aspect. The provider's real value replaces this after first render.
-    static func estimated(screenWidth: Double, screenHeight: Double) -> PanelPlacement {
-        let w = screenWidth - 52
-        return PanelPlacement(screen: (screenWidth, screenHeight), panel: (w, (w * 1.618).rounded()))
-    }
-
-    /// Where the panel lands when it is the first item on a page scrolled to the top
-    /// (measured: icon grid starts 88 pt down on an 874-pt screen). Used as the default offset.
-    var defaultTop: Double { Self.measured(screen.height, pro: 88, proMax: 93.7).rounded() }
-    var defaultOffset: Double {
-        let range = max(screen.height - panel.height, 1)
-        return min(max(defaultTop / range, 0), 1)
-    }
-
-    /// Crop rect for `offset` in 0…1 over the whole screen (0 = top edge, 1 = bottom edge).
-    /// iOS 27 home pages scroll vertically, so no band is off-limits; the user drags it into place.
-    /// Horizontally centred. Clamped so the rect is always inside the screen.
-    func rect(offset: Double) -> (x: Double, y: Double, width: Double, height: Double) {
-        let o = min(max(offset, 0), 1)
-        let x = ((screen.width - panel.width) / 2).rounded()
-        let maxY = max(screen.height - panel.height, 0)
-        let y = (maxY * o).rounded()
-        return (x, y, panel.width, min(panel.height, screen.height))
-    }
-
-    /// Distance between icon rows on the Home Screen.
-    var rowPitch: Double { Self.measured(screen.height, pro: 100, proMax: 108.6) }
-
-    /// Home Screen grid geometry measured on iOS 27.0 (24A434), icon top edges from real screenshots:
-    ///   iPhone 17 Pro      402 × 874 pt → first row top 88 pt,   row pitch 100 pt
-    ///   iPhone 17 Pro Max  440 × 956 pt → first row top 93.7 pt, row pitch 108.6 pt (both gaps)
-    /// A single height ratio was 2.3 pt off on the Pro Max, so other heights are interpolated linearly
-    /// through these two points instead.
-    static func measured(_ height: Double, pro: Double, proMax: Double) -> Double {
-        pro + (height - 874) * (proMax - pro) / (956 - 874)
-    }
-
-    /// Top edge (in screen points) for a fixed slot, or nil for `custom` (= use the app's aligned crop).
-    func top(for slot: PanelSlotKind) -> Double? {
-        slot.rowsDown.map { (defaultTop + Double($0) * rowPitch).rounded() }
-    }
-
-    /// Crop rect anchored to an explicit top (in screen points). Horizontally centred;
-    /// y clamped so the rect is always inside the screen.
-    func rect(top: Double) -> (x: Double, y: Double, width: Double, height: Double) {
-        let x = ((screen.width - panel.width) / 2).rounded()
-        let maxY = max(screen.height - panel.height, 0)
-        let y = min(max(top.rounded(), 0), maxY)
-        return (x, y, panel.width, min(panel.height, screen.height))
+/// Every async read the widget timeline makes goes through here, so a stalled source
+/// (network waiting on a permission prompt the extension can't show, a HealthKit query
+/// that never calls back) can't keep the timeline from being delivered. A never-delivered
+/// timeline leaves the widget on its redacted placeholder forever.
+enum Deadline {
+    /// Races `operation` against `seconds`; returns `fallback` if the clock wins.
+    /// Deliberately unstructured: a TaskGroup would still await a child that ignores
+    /// cancellation (a checked continuation), which is exactly the case we must survive.
+    static func run<T>(seconds: Double, fallback: T,
+                       _ operation: @escaping @Sendable () async -> T) async -> T {
+        await withCheckedContinuation { (cont: CheckedContinuation<T, Never>) in
+            let once = OnceResume(cont)
+            let work = Task { once.resume(await operation()) }
+            Task {
+                try? await Task.sleep(nanoseconds: UInt64(max(seconds, 0) * 1_000_000_000))
+                if once.resume(fallback) { work.cancel() }
+            }
+        }
     }
 }

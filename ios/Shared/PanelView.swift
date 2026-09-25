@@ -27,47 +27,21 @@ struct PanelData {
     var events: [EventInfo] = []
     var timer: TimerState
     var system: SystemSnapshot?
-    var background: UIImage?
-    /// Optional dark-mode variant: iOS dims wallpapers in Dark Mode, so the panel needs
-    /// a separate crop to match. Nil → fall back to `background`.
-    var backgroundDark: UIImage?
     /// systemLarge gets the short version; systemExtraLargePortrait gets everything.
     var compact: Bool = false
-    /// Average luminance (0…1) of `background`, measured once where the image is loaded.
-    var backgroundLuma: Double? = nil
-    var backgroundLumaDark: Double? = nil
     /// True when the user picked "transparent" in Edit Widget AND `.preferredBackgroundStyle(.transparent)`
     /// is in effect. In this mode the system composites the widget straight onto the wallpaper (no dim),
-    /// so the panel MUST NOT paint a wallpaper crop of its own. Provider nils `background`/`backgroundDark`
     /// and the view paints `Color.clear` as the container background.
     var trueTransparent: Bool = false
     /// Border style rawValue (`PanelBorderChoice`). "none" or unknown → PanelView draws nothing.
     var borderStyle: String = "none"
     /// Border colour rawValue (`PanelBorderColorChoice`). "ink" → follows the current ink; others → hex.
     var borderColor: String = "white"
-    /// Index into [background, backgroundDark] picked for this render — set by PanelView once
-    /// the system colour scheme is known. Defaults to light (back-compat for callers that
-    /// never go through PanelView, e.g. the previews in Xcode).
-    var backgroundPick: Int = PanelBackgroundPick.light
-
-    /// The image actually drawn — picked by `backgroundPick` against `background`/`backgroundDark`.
-    var selectedBackground: UIImage? {
-        switch backgroundPick {
-        case PanelBackgroundPick.dark: return backgroundDark ?? background
-        default: return background
-        }
-    }
-    var selectedLuma: Double? {
-        switch backgroundPick {
-        case PanelBackgroundPick.dark: return backgroundLumaDark ?? backgroundLuma
-        default: return backgroundLuma
-        }
-    }
 
     /// Wallpaper brightness after the user's dimming slider.
+    /// Base luminance is constant 0.26 (matching when background was nil), keeping ink identical.
     var effectiveLuma: Double {
-        let base = selectedLuma ?? (selectedBackground == nil ? 0.26 : 0.45)
-        return base * (1 - config.tint)
+        0.26 * (1 - config.tint)
     }
     /// true = light glass + dark ink (the reference look); false = dark glass + white ink.
     var lightScheme: Bool {
@@ -95,8 +69,7 @@ struct PanelData {
                      EventInfo(title: "Studio day", start: Calendar.current.startOfDay(for: now).addingTimeInterval(3600 * 48), end: Calendar.current.startOfDay(for: now).addingTimeInterval(3600 * 72), isAllDay: true)],
             timer: TimerState(endDate: now.addingTimeInterval(312), pausedRemaining: nil),
             system: SystemSnapshot(cpuPercent: 12, memoryUsedBytes: 3_100_000_000, memoryTotalBytes: 8_000_000_000,
-                                   diskFreeBytes: 118_000_000_000, diskTotalBytes: 256_000_000_000, network: "wifi", batteryLevel: 0.81, sampled: now),
-            background: nil, backgroundLuma: nil)
+                                   diskFreeBytes: 118_000_000_000, diskTotalBytes: 256_000_000_000, network: "wifi", batteryLevel: 0.81, sampled: now))
     }
 }
 
@@ -105,20 +78,6 @@ extension Color {
         self.init(red: Double((hex >> 16) & 0xFF) / 255,
                   green: Double((hex >> 8) & 0xFF) / 255,
                   blue: Double(hex & 0xFF) / 255)
-    }
-}
-
-extension UIImage {
-    /// Average luminance (Rec. 709) of the whole image, by downsampling to a single pixel.
-    var averageLuminance: Double {
-        guard let cg = cgImage else { return 0.5 }
-        var px: [UInt8] = [0, 0, 0, 0]
-        guard let ctx = CGContext(data: &px, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
-                                  space: CGColorSpaceCreateDeviceRGB(),
-                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return 0.5 }
-        ctx.interpolationQuality = .medium
-        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: 1, height: 1))
-        return (0.2126 * Double(px[0]) + 0.7152 * Double(px[1]) + 0.0722 * Double(px[2])) / 255
     }
 }
 
@@ -183,23 +142,9 @@ struct PanelView: View {
     /// true inside WidgetKit (uses containerBackground + real intents); false in the app preview.
     var inWidget: Bool = true
     @Environment(\.widgetRenderingMode) private var renderingMode
-    /// System appearance — captured here, before any environment overrides below. Used only to
-    /// pick which wallpaper crop (light / dark) to draw; the ink scheme itself is computed from
-    /// `data.lightScheme` afterwards.
-    @Environment(\.colorScheme) private var systemColorScheme
-
     private let pad: CGFloat = 12
     private var accented: Bool { inWidget && renderingMode != .fullColor }
-    /// `data` resolved against the system colour scheme so lightScheme / effectiveLuma / background
-    /// all see the variant the user is currently looking at.
-    private var resolved: PanelData {
-        var d = data
-        d.backgroundPick = PanelBackgroundPick.pick(
-            light: data.background != nil,
-            dark: data.backgroundDark != nil,
-            systemDark: systemColorScheme == .dark)
-        return d
-    }
+    private var resolved: PanelData { data }
     private var ink: PanelInk { PanelInk(light: resolved.lightScheme, accented: accented) }
     private var metrics: Metrics { resolved.compact ? .large : .xl }
 
@@ -214,7 +159,7 @@ struct PanelView: View {
             .environment(\.panelFont, resolved.config.design)
             // Anything without its own button (header, system row, gaps) opens the app's settings sheet.
             .widgetURL(Launcher.settingsDeepLink)
-            .modifier(BackgroundModifier(image: resolved.selectedBackground, tint: resolved.config.tint,
+            .modifier(BackgroundModifier(tint: resolved.config.tint,
                                          inWidget: inWidget, accented: accented, ink: ink,
                                          trueTransparent: resolved.trueTransparent))
             .modifier(BorderModifier(style: resolved.borderStyle, colorID: resolved.borderColor,
@@ -327,27 +272,18 @@ struct PanelView: View {
 }
 
 private struct BackgroundModifier: ViewModifier {
-    let image: UIImage?
     let tint: Double
     let inWidget: Bool
     let accented: Bool
     let ink: PanelInk
     /// True when the user picked "transparent" + `.preferredBackgroundStyle(.transparent)` is in
-    /// effect. Provider nils the wallpaper crop; we hand the system a transparent container so the
-    /// real wallpaper (incl. shuffle) shows through with no dim. App preview is unaffected.
+    /// effect. The system transparent container lets the real wallpaper show through with no dim.
     let trueTransparent: Bool
 
     @ViewBuilder private var fill: some View {
         ZStack {
-            if let image {
-                Image(uiImage: image).resizable().scaledToFill()
-            } else {
-                // No wallpaper yet. WidgetKit always composites the widget onto an opaque backing
-                // (verified 2026-09-16: .clear and 1%-alpha both come out solid), so "transparent" on a
-                // full-colour Home Screen is only possible by drawing the wallpaper crop ourselves.
-                LinearGradient(colors: [Color(hex: 0x1E3A5F), Color(hex: 0x0B1B2B)],
-                               startPoint: .top, endPoint: .bottom)
-            }
+            LinearGradient(colors: [Color(hex: 0x1E3A5F), Color(hex: 0x0B1B2B)],
+                           startPoint: .top, endPoint: .bottom)
             Color.black.opacity(tint)
             // One faint sheet over the whole panel: it ties the bare rows to the cards without
             // hiding the wallpaper underneath.

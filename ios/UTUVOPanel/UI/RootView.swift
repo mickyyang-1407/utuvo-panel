@@ -6,6 +6,9 @@ struct RootView: View {
     var body: some View {
         SettingsView()
             .task {
+                // Weather first and independent of HealthKit: a Health query that never calls back
+                // must not keep the app from raising the network prompt / warming the cache (0011).
+                Task { await model.refreshWeather() }
                 await model.refreshHealth()
                 model.refreshStatuses()
                 model.refreshSetup()
@@ -160,7 +163,10 @@ struct SettingsView: View {
             .onChange(of: scenePhase) { _, phase in
                 // User typically edits the widget on Home Screen and returns; re-read the configuration
                 // state to refresh the check mark in the setup guide as soon as we come back.
-                if phase == .active { model.refreshSetup() }
+                if phase == .active {
+                    model.refreshSetup()
+                    Task { await model.refreshWeather() }
+                }
             }
         }
     }
@@ -182,17 +188,15 @@ private struct PreviewCard: View {
     @EnvironmentObject private var model: PanelModel
 
     var body: some View {
-        let p = model.placement
-        let pw = CGFloat(p.panel.width), ph = CGFloat(p.panel.height)
+        let size = model.panelSize
+        let pw = size.width, ph = size.height
         GeometryReader { geo in
             let s = min(geo.size.width / pw, 1)
             PanelView(data: model.previewData, inWidget: false)
                 .frame(width: pw, height: ph)
                 .background {
-                    if model.background == nil {
-                        LinearGradient(colors: [Color(hex: 0x6E8EAF), Color(hex: 0x2B3A4F)], startPoint: .top, endPoint: .bottom)
-                            .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
-                    }
+                    LinearGradient(colors: [Color(hex: 0x6E8EAF), Color(hex: 0x2B3A4F)], startPoint: .top, endPoint: .bottom)
+                        .clipShape(RoundedRectangle(cornerRadius: 36, style: .continuous))
                 }
                 .scaleEffect(s, anchor: .topLeading)
                 .frame(width: pw * s, height: ph * s)

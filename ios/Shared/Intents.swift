@@ -57,24 +57,6 @@ enum PanelBackgroundChoice: String, AppEnum {
     ]
 }
 
-// PanelSlotChoice was the "position" picker in Edit Widget (top / row1 / row2 / custom).
-// Removed in ticket 0007 — the system transparent mode (WidgetKit SPI preferredBackgroundStyle)
-// means the user no longer needs to tell the panel where it sits. PanelSlotKind still lives
-// in Logic.swift because the slot geometry is read from older configs and used elsewhere.
-// Keep this enum around too so old widget configurations continue to decode.
-enum PanelSlotChoice: String, AppEnum {
-    case custom, top, row1, row2
-
-    static var typeDisplayRepresentation: TypeDisplayRepresentation = "位置"
-    static var caseDisplayRepresentations: [PanelSlotChoice: DisplayRepresentation] = [
-        .custom: "在 app 裡對齊的位置",
-        .top:    "頁面頂端",
-        .row1:   "往下一列",
-        .row2:   "往下兩列",
-    ]
-
-    var kind: PanelSlotKind { PanelSlotKind(rawValue: rawValue)! }
-}
 
 // MARK: Widget configuration (Edit Widget sheet: border + colour)
 

@@ -154,24 +154,22 @@ enum SystemStats {
 
     private static func networkKind() async -> String {
         await withCheckedContinuation { cont in
+            // Handler and timeout run on different queues; OnceResume makes sure only one of
+            // them resumes (a second resume of a checked continuation crashes — ticket 0011).
+            let once = OnceResume(cont)
             let monitor = NWPathMonitor()
-            var done = false
             monitor.pathUpdateHandler = { path in
-                guard !done else { return }
-                done = true
                 let kind: String
                 if path.status != .satisfied { kind = "none" }
                 else if path.usesInterfaceType(.wifi) { kind = "wifi" }
                 else if path.usesInterfaceType(.cellular) { kind = "cellular" }
                 else if path.usesInterfaceType(.wiredEthernet) { kind = "wired" }
                 else { kind = "wifi" }
-                monitor.cancel()
-                cont.resume(returning: kind)
+                if once.resume(kind) { monitor.cancel() }
             }
             monitor.start(queue: DispatchQueue.global(qos: .utility))
             DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
-                guard !done else { return }
-                done = true; monitor.cancel(); cont.resume(returning: "none")
+                if once.resume("none") { monitor.cancel() }
             }
         }
     }

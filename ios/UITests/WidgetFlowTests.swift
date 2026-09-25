@@ -15,8 +15,16 @@ final class WidgetFlowTests: XCTestCase {
         print("=== TREE \(tag) ===\n\(app.debugDescription)\n=== END \(tag) ===")
     }
 
-    /// 2. On the home screen: add the extra-large-portrait widget.
+    /// 2. On the home screen: add the extra-large-portrait widget — once. Re-running the suite must
+    /// not stack a second panel on the Home Screen (every other test assumes exactly one).
     func test2_addWidget() {
+        if scrollToWidget().exists {
+            snap("already-added")
+            XCTAssertEqual(widgetCount(), 1, "exactly one panel on the Home Screen")
+            return
+        }
+        // A freshly installed app's widget isn't in the gallery until the app has run once.
+        let app = XCUIApplication(); app.launch(); sleep(3)
         XCUIDevice.shared.press(.home)
         sleep(1)
         // Make sure we are on the first home page, not App Library.
@@ -73,6 +81,8 @@ final class WidgetFlowTests: XCTestCase {
         sleep(3)
         snap("home-with-widget")
         dump(springboard, "home-with-widget")
+        XCTAssertTrue(scrollToWidget().exists, "panel is on the Home Screen after Add")
+        XCTAssertEqual(widgetCount(), 1, "exactly one panel on the Home Screen")
     }
 }
 
@@ -81,16 +91,24 @@ extension WidgetFlowTests {
     func test3_locateWidget() {
         XCUIDevice.shared.press(.home); sleep(1)
         springboard.swipeRight(); sleep(1); springboard.swipeRight(); sleep(1)
+        var widgetPages: [Int] = []
         for page in 0..<4 {
             snap("page-\(page)")
-            let ours = springboard.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'UTUVO Panel' OR identifier CONTAINS 'UTUVOPanel' OR identifier CONTAINS 'glasspanel'"))
-            let snapshot = ours.allElementsBoundByIndex
-            for e in snapshot.prefix(5) {
-                print("=== OURS page \(page) type=\(e.elementType.rawValue) label=\(e.label) id=\(e.identifier) frame=\(e.frame) screen=\(springboard.frame)")
+            // The app icon shares the label; only the widget carries "Widget" in its value.
+            // One resolve per page: iterating allElementsBoundByIndex re-queries each element lazily
+            // and flakes when SpringBoard's tree shifts mid-loop.
+            let w = widgetQuery.firstMatch
+            let frame = w.exists ? w.frame : .zero
+            let onScreen = w.exists && frame.minX >= 0 && frame.maxX <= springboard.frame.width
+            if onScreen {
+                print("=== FOUND on page \(page) frame=\(frame) screen=\(springboard.frame)")
+                widgetPages.append(page)
+                // SpringBoard only exposes the visible page's widgets, so count here, not at the end.
+                XCTAssertEqual(widgetCount(), 1, "exactly one panel on page \(page)")
             }
-            if !snapshot.isEmpty { print("=== FOUND on page \(page)") }
             springboard.swipeLeft(); sleep(1)
         }
+        XCTAssertEqual(widgetPages.count, 1, "panel on exactly one of the first four pages (found on \(widgetPages))")
     }
 }
 
@@ -107,6 +125,14 @@ extension WidgetFlowTests {
 
 
 extension WidgetFlowTests {
+    /// Our widget, not the app icon (same label; only the widget's value says "Widget").
+    private var widgetQuery: XCUIElementQuery {
+        springboard.descendants(matching: .any).matching(NSPredicate(format: "label == 'UTUVO Panel' AND value CONTAINS 'Widget'"))
+    }
+
+    /// Panels SpringBoard currently exposes — the visible page only (measured: off-screen pages read 0).
+    private func widgetCount() -> Int { widgetQuery.count }
+
     private func scrollToWidget() -> XCUIElement {
         XCUIDevice.shared.press(.home); sleep(1)
         springboard.swipeRight(); sleep(1)
@@ -257,7 +283,8 @@ extension WidgetFlowTests {
 extension WidgetFlowTests {
     /// 13. The three bottom layouts are selectable in Settings and each one renders (preview + widget).
     func test13_bottomLayouts() {
-        let options = [("hourly", "Hourly weather", "逐時天氣"), ("agenda", "Agenda", "行程清單"), ("spread", "Even spacing", "平均分配")]
+        // Ends on hourly (the default) so later tests and screenshots see the default layout.
+        let options = [("spread", "Even spacing", "平均分配"), ("agenda", "Agenda", "行程清單"), ("hourly", "Hourly weather", "逐時天氣")]
         for (id, en, zh) in options {
             let app = XCUIApplication(); app.launch(); sleep(2)
             let picker = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Bottom section' OR label BEGINSWITH '下半部'")).firstMatch

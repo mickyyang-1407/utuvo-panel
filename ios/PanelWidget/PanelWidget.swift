@@ -42,51 +42,55 @@ struct PanelProvider: AppIntentTimelineProvider {
         let now = Date()
         let minute = Calendar.current.dateInterval(of: .minute, for: now)?.start ?? now
 
-        let weather = fetchWeather ? await WeatherService.current(config: config) : WeatherService.cached()
+        // Every async source below is capped (ticket 0011): a timeline that never returns leaves
+        // the widget on its redacted placeholder, so a stalled source falls back to its cache.
+        // All slow sources run concurrently, so the worst case is the longest deadline (~6 s),
+        // not their sum.
+        async let weatherRead: WeatherSnapshot? = fetchWeather
+            ? WeatherService.current(config: config) : WeatherService.cached()
+        async let activityRead: ActivitySnapshot? = config.showActivity
+            ? Deadline.run(seconds: 4, fallback: nil) { await HealthReader.today(now: now) }
+            : nil
+        async let systemRead: SystemSnapshot? = config.showSystem
+            ? Deadline.run(seconds: 2.5, fallback: nil) { await SystemStats.sample() }
+            : nil
+        // EventKit's events(matching:) is synchronous; capped the same way.
+        async let eventRead: EventInfo? = config.showCalendar
+            ? Deadline.run(seconds: 2, fallback: nil) { CalendarService.nextEvent(from: now) }
+            : nil
+        // Agenda layout only: the bottom strip paints up to 3 events; hourly / spread don't read
+        // this field, so we skip the EK query in those modes to keep the widget snappy.
+        async let eventsRead: [EventInfo] = (config.bottomLayout == "agenda" && config.showCalendar)
+            ? Deadline.run(seconds: 2, fallback: []) { CalendarService.upcoming(from: now, limit: 3) }
+            : []
+        let weather = await weatherRead
         // Read fresh on every timeline so the widget reflects today's numbers even when the
         // app hasn't been opened. If HealthKit is unavailable / locked we keep the cached
         // snapshot (only when it's still from today — `resolve` refuses yesterday's data).
         let cachedActivity = Shared.defaults.codable(ActivitySnapshot.self, forKey: Shared.Key.activity)
-        let freshActivity = config.showActivity ? await HealthReader.today(now: now) : nil
+        let freshActivity = await activityRead
         if let freshActivity {
             Shared.defaults.set(codable: freshActivity, forKey: Shared.Key.activity)
         }
         let activity = ActivitySnapshot.resolve(fresh: freshActivity, cached: cachedActivity, now: now)
-        let event = config.showCalendar ? CalendarService.nextEvent(from: now) : nil
-        // Agenda layout only: the bottom strip paints up to 3 events; hourly / spread don't read
-        // this field, so we skip the EK query in those modes to keep the widget snappy.
-        let events: [EventInfo] = (config.bottomLayout == "agenda" && config.showCalendar)
-            ? CalendarService.upcoming(from: now, limit: 3)
-            : []
+        let event = await eventRead
+        let events = await eventsRead
         let timer = TimerState.load()
-        let system = config.showSystem ? await SystemStats.sample() : nil
-        if let system { Shared.defaults.set(codable: system, forKey: Shared.Key.system) }
+        let cachedSystem = Shared.defaults.codable(SystemSnapshot.self, forKey: Shared.Key.system)
+        let freshSystem = await systemRead
+        if let freshSystem { Shared.defaults.set(codable: freshSystem, forKey: Shared.Key.system) }
+        let system = config.showSystem ? (freshSystem ?? cachedSystem) : nil
         // True-transparent mode: the widget composites straight onto the live wallpaper (no dim,
         // no crop of our own). Skip the wallpaper load entirely — PanelView hands the system
         // Color.clear as the container background. Gradient still draws its own fallback.
         let trueTransparent = intent.backgroundValue == .transparent
-        let background: UIImage? = trueTransparent ? nil : resolveBackground(
-            intent: intent, trueTransparent: trueTransparent, panel: context.displaySize,
-            screenshot: Shared.screenshotURL, fallbackBackground: Shared.backgroundURL)
-        // Measured once per timeline: decides light-glass-on-dark-ink vs the reverse.
-        let luma = background?.averageLuminance
-        // Dark variant is optional — when the user hasn't added one, this is nil and the view
-        // falls back to the light crop in system dark mode.
-        let backgroundDark: UIImage? = trueTransparent
-            ? nil
-            : (FileManager.default.fileExists(atPath: Shared.screenshotDarkURL.path)
-                ? resolveBackground(intent: intent, trueTransparent: trueTransparent, panel: context.displaySize,
-                                     screenshot: Shared.screenshotDarkURL, fallbackBackground: Shared.backgroundDarkURL)
-                : nil)
-        let lumaDark = backgroundDark?.averageLuminance
 
         var entries: [PanelEntry] = []
         for i in 0..<30 {
             let date = minute.addingTimeInterval(TimeInterval(i * 60))
             let data = PanelData(date: date, config: config, weather: weather, activity: activity,
-                                 event: event, events: events, timer: timer, system: system, background: background,
-                                 backgroundDark: backgroundDark, compact: compact,
-                                 backgroundLuma: luma, backgroundLumaDark: lumaDark,
+                                 event: event, events: events, timer: timer, system: system,
+                                 compact: compact,
                                  trueTransparent: trueTransparent,
                                  borderStyle: PanelBorderPick.resolve(intentValue: intent.borderValue.rawValue,
                                                                        appValue: config.borderStyle),
@@ -104,28 +108,6 @@ struct PanelProvider: AppIntentTimelineProvider {
         return entries
     }
 
-    /// Resolve which image backs the panel for this widget configuration.
-    /// - `gradient` → nil (panel renders the existing deep-blue gradient fallback).
-    /// - `transparent` (true-transparent) → nil — the system composites the live wallpaper through;
-    ///   `build()` already bypasses this function in that case.
-    /// - `transparent` (non-true-transparent callers, legacy) → falls through to the cropped background.
-    /// `screenshot` / `fallbackBackground` parameterise the variant — the provider calls once for
-    /// the light crop and once for the dark crop.
-    ///
-    /// Ticket 0007: `intent.slotValue` was removed from `PanelWidgetIntent`; this function no longer
-    /// reads a slot. The slot-based crop branch (top / row1 / row2) is unreachable now and is kept
-    /// only because the file behind it (`AlignView.swift`, `PanelPlacement.top(for:)`) still exists.
-    /// Marked as a no-op until that code path is deleted.
-    private func resolveBackground(intent: PanelWidgetIntent, trueTransparent: Bool, panel: CGSize,
-                                   screenshot: URL, fallbackBackground: URL) -> UIImage? {
-        let backgroundChoice = intent.backgroundValue
-        if backgroundChoice == .gradient { return nil }
-        // True-transparent callers (build) skip this entirely; this branch is a defensive
-        // last line so any future caller that forgot to set `trueTransparent` still goes clear.
-        if backgroundChoice == .transparent || trueTransparent { return nil }
-        // No slot picker anymore: serve the already-cropped `panel-bg.jpg` directly.
-        return UIImage(contentsOfFile: fallbackBackground.path)
-    }
 
     private func familyKey(_ f: WidgetFamily) -> String {
         switch f {
@@ -133,32 +115,6 @@ struct PanelProvider: AppIntentTimelineProvider {
         case .systemLarge: return "large"
         default: return "other"
         }
-    }
-}
-
-// MARK: - Weather
-
-enum WeatherService {
-    static func cached() -> WeatherSnapshot? {
-        Shared.defaults.codable(WeatherSnapshot.self, forKey: Shared.Key.weather)
-    }
-
-    /// Cached for 30 minutes; falls back to the cache on any failure.
-    static func current(config: PanelConfig) async -> WeatherSnapshot? {
-        guard config.showWeather else { return nil }
-        // A cache from before ticket 0010 has no hourly data; treat it as stale so the hourly strip
-        // shows up on the first timeline after the update instead of up to 30 min later.
-        if let c = cached(), !c.hourly.isEmpty, Date().timeIntervalSince(c.fetched) < 30 * 60 { return c }
-        // No location yet → Taipei, so the row never sits empty.
-        let lat = config.latitude ?? 25.033, lon = config.longitude ?? 121.565
-        do {
-            let (data, _) = try await URLSession.shared.data(from: WeatherSnapshot.url(latitude: lat, longitude: lon))
-            if let snap = WeatherSnapshot.parse(data) {
-                Shared.defaults.set(codable: snap, forKey: Shared.Key.weather)
-                return snap
-            }
-        } catch {}
-        return cached()
     }
 }
 

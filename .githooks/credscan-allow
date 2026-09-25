@@ -1,0 +1,5 @@
+# credscan 放行（綁 blob sha256，內容一改即失效）。2026-09-25 PII 模式誤判：
+70ed029d25ba36a95022fb45607fffbc840db4ff1805af01c8a511db8802b033  # ios/UTUVOPanel.xcodeproj/project.pbxproj — [iban] 誤判＝Xcode 24 位十六進位物件 ID
+90d11462ce99452a219249f697d1768c958df743adcadec23be0345a2a4edc1d  # docs/AppStore/screenshots-1.0.2/en-US/01-widget-in-place.png — [email-address] 誤判＝PNG IDAT 壓縮資料裡的隨機可列印字元
+24d6b29c540af9118a70c73bfba422187b5360d6cb2c71d672cf985f1b542a62  # docs/evidence-0011/before-stalled-network-placeholder-5s-30s-90s.png — [email-address] 誤判＝PNG IDAT 壓縮資料裡的隨機可列印字元
+6a3075399c6a1c039d5b6cd52101d11f45cd1872ff2c123fb18b185cce59faeb  # docs/evidence-0011/fresh-install-normal-network-v1.0.1-control.png — [email-address] 誤判＝PNG IDAT 壓縮資料裡的隨機可列印字元

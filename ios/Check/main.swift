@@ -78,27 +78,6 @@ do {
     check(a.standFraction == 0, "zero goal → 0, not NaN")
 }
 
-// MARK: Crop geometry (iPhone 17 Pro, 402×874 pt)
-do {
-    let p = PanelPlacement.estimated(screenWidth: 402, screenHeight: 874)
-    check(p.panel.width == 350, "estimated width = screen − 52 (measured 349.67)")
-    check(p.panel.height == 566, "estimated height 350×1.618 (measured 565.67)")
-    let top = p.rect(offset: 0), bottom = p.rect(offset: 1), mid = p.rect(offset: 0.5)
-    check(top.x == 26 && bottom.x == 26, "centred")
-    check(top.y == 0, "offset 0 is the top edge")
-    check(bottom.y + bottom.height == 874, "offset 1 is the bottom edge")
-    check(p.rect(offset: p.defaultOffset).y == 88, "default offset lands on the icon grid top (88 pt)")
-    check(mid.y > top.y && mid.y < bottom.y, "mid between")
-    check(p.rect(offset: 7).y == bottom.y && p.rect(offset: -2).y == top.y, "offset clamps")
-    // Reported size taller than the usable band: must still be inside the screen.
-    let tall = PanelPlacement(screen: (402, 874), panel: (364, 900))
-    let r = tall.rect(offset: 0.5)
-    check(r.y == 0 && r.height == 874, "oversize panel clamps to screen")
-    // Different phone, same math.
-    let se = PanelPlacement.estimated(screenWidth: 375, screenHeight: 667)
-    check(se.panel.width == 323 && se.rect(offset: 0).x == 26, "other screen width")
-}
-
 // MARK: Config round-trip
 do {
     var c = PanelConfig(); c.note = "hi"; c.launcherIDs = ["maps"]; c.tint = 0.4
@@ -111,6 +90,10 @@ do {
     // A config written before the v2 redesign carries designVersion 0, which is what triggers the one-time
     // re-seat of the typeface in PanelConfig.load().
     check(decodedOld?.designVersion == 0 && decodedOld?.panelScheme == "auto", "pre-v2 config decodes as designVersion 0 / auto scheme")
+    // Old config carrying retired fields (e.g. backgroundOffset) must still decode.
+    let legacy = #"{"backgroundOffset":0.286,"note":"legacy"}"#.data(using: .utf8)!
+    let decodedLegacy = try? JSONDecoder().decode(PanelConfig.self, from: legacy)
+    check(decodedLegacy?.note == "legacy" && decodedLegacy?.tint == 0.0, "legacy config with retired backgroundOffset decodes cleanly")
 }
 
 // MARK: Activity snapshot decodes across versions
@@ -123,30 +106,6 @@ do {
     var b = ActivitySnapshot(); b.distanceMeters = 3860
     let round = try? JSONDecoder().decode(ActivitySnapshot.self, from: JSONEncoder().encode(b))
     check(round == b, "activity snapshot round-trips with distance")
-}
-
-// MARK: Dark-mode wallpaper pick (panel renders the dark variant only when the system is dark AND a dark crop exists)
-do {
-    check(PanelBackgroundPick.pick(light: true,  dark: true,  systemDark: true)  == PanelBackgroundPick.dark, "system dark + dark crop → dark")
-    check(PanelBackgroundPick.pick(light: true,  dark: false, systemDark: true)  == PanelBackgroundPick.light, "system dark + no dark crop → fall back to light")
-    check(PanelBackgroundPick.pick(light: true,  dark: true,  systemDark: false) == PanelBackgroundPick.light, "system light → light even with a dark crop")
-    check(PanelBackgroundPick.pick(light: false, dark: true,  systemDark: true)  == PanelBackgroundPick.dark, "no light crop + dark crop available + system dark → dark")
-    check(PanelBackgroundPick.pick(light: false, dark: false, systemDark: true)  == PanelBackgroundPick.light, "neither crop → light (no-op)")
-    check(PanelBackgroundPick.light == 0 && PanelBackgroundPick.dark == 1, "indices stay 0/1")
-    // The new dark URLs live next to the light ones in the shared container — sharing the
-    // container means a permission bug would break both at once.
-    check(Shared.backgroundDarkURL.lastPathComponent == "panel-bg-dark.jpg", "dark bg URL filename")
-    check(Shared.screenshotDarkURL.lastPathComponent == "panel-screenshot-dark.jpg", "dark screenshot URL filename")
-}
-
-// MARK: Home Screen grid geometry matches the two measured phones
-do {
-    let pro = PanelPlacement(screen: (402, 874), panel: (349.67, 565.67))
-    check(pro.defaultTop == 88 && pro.rowPitch == 100, "17 Pro grid: top 88, pitch 100")
-    let max = PanelPlacement(screen: (440, 956), panel: (388, 628))
-    check(max.defaultTop == 94, "17 Pro Max grid top ≈ 93.7 → 94")
-    check(max.top(for: .row2) == 311, "17 Pro Max two rows down lands on the measured 311 pt")
-    check(abs(max.rowPitch - 108.6) < 0.001, "17 Pro Max pitch 108.6")
 }
 
 // MARK: ActivitySnapshot.resolve — fresh wins, today's cache wins, yesterday never does
@@ -212,27 +171,23 @@ do {
 
 // MARK: Setup progress (one-step banner state — driven by WidgetCenter only)
 do {
-    // Ticket 0007: the wallpaper / position steps were killed by true-transparent. `allDone`
-    // now reduces to one question: has the user placed at least one Panel widget on the Home
-    // Screen? The extra flags on `compute` are kept for call-site compatibility but ignored.
-
     // No widget on Home Screen yet → not done.
-    var p = SetupProgress.compute(widgetBackgrounds: [], widgetSlots: [], hasScreenshot: false, offsetMoved: false)
+    var p = SetupProgress.compute(widgetBackgrounds: [])
     check(p == SetupProgress(widgetPlaced: false), "no widget → not done")
     check(p.allDone == false, "no widget → allDone is false")
 
-    // Any widget on the Home Screen — transparent, gradient, with or without a screenshot — counts as done.
-    p = SetupProgress.compute(widgetBackgrounds: ["transparent"], widgetSlots: ["custom"], hasScreenshot: false, offsetMoved: false)
-    check(p == SetupProgress(widgetPlaced: true), "widget placed (transparent, no screenshot) → done")
+    // Any widget on the Home Screen — transparent, gradient — counts as done.
+    p = SetupProgress.compute(widgetBackgrounds: ["transparent"])
+    check(p == SetupProgress(widgetPlaced: true), "widget placed (transparent) → done")
     check(p.allDone, "widget placed → allDone")
 
-    // All widgets on gradient → done (the old code also short-circuited here).
-    p = SetupProgress.compute(widgetBackgrounds: ["gradient", "gradient"], widgetSlots: ["custom", "custom"], hasScreenshot: false, offsetMoved: false)
+    // All widgets on gradient → done.
+    p = SetupProgress.compute(widgetBackgrounds: ["gradient", "gradient"])
     check(p == SetupProgress(widgetPlaced: true), "all gradient → done")
     check(p.allDone, "all gradient → allDone")
 
     // Multiple widgets, mixed backgrounds → still done as long as one is on the Home Screen.
-    p = SetupProgress.compute(widgetBackgrounds: ["transparent", "gradient"], widgetSlots: ["custom", "row1"], hasScreenshot: true, offsetMoved: true)
+    p = SetupProgress.compute(widgetBackgrounds: ["transparent", "gradient"])
     check(p == SetupProgress(widgetPlaced: true), "mixed backgrounds → done")
     check(p.allDone, "mixed backgrounds → allDone")
 
@@ -240,37 +195,6 @@ do {
     // Pin it via `Mirror` to make sure no leftover SetupProgress carries the dead fields.
     let fields = Mirror(reflecting: SetupProgress(widgetPlaced: true)).children.compactMap { $0.label }
     check(Set(fields) == ["widgetPlaced"], "SetupProgress has only widgetPlaced; got \(Set(fields))")
-}
-
-// MARK: Widget configuration slot geometry (iPhone 17 Pro, 402×874 pt)
-do {
-    // Slot kind maps to the right row offset (custom = no fixed row).
-    check(PanelSlotKind.custom.rowsDown == nil, "custom has no rowsDown")
-    check(PanelSlotKind.top.rowsDown == 0, "top = 0 rows down")
-    check(PanelSlotKind.row1.rowsDown == 1, "row1 = 1 row down")
-    check(PanelSlotKind.row2.rowsDown == 2, "row2 = 2 rows down")
-
-    // 874 pt screen: measured row pitch is 100 pt (= 0.1144 × 874, rounded).
-    let p = PanelPlacement.estimated(screenWidth: 402, screenHeight: 874)
-    check(p.rowPitch == 100, "row pitch on 874-pt screen = 100 pt")
-    check(p.top(for: .top) == p.defaultTop, "top slot lands on defaultTop")
-    check(p.top(for: .row1) == p.defaultTop + 100, "row1 = defaultTop + one pitch")
-    check(p.top(for: .row2) == p.defaultTop + 200, "row2 = defaultTop + two pitches")
-    check(p.top(for: .custom) == nil, "custom slot has no top")
-
-    // rect(top:) clamps so the panel is always inside the screen.
-    let huge = p.rect(top: 10_000)
-    check(huge.y == 874 - 566, "rect clamps y to bottom edge")
-    let neg = p.rect(top: -50)
-    check(neg.y == 0, "rect clamps y to 0")
-    let ok = p.rect(top: 200)
-    check(ok.x == 26, "rect keeps horizontal centre")
-    check(ok.y == 200, "rect passes valid top through unchanged")
-
-    // Oversize panel: even with a wild top, the rect stays inside the screen.
-    let tall = PanelPlacement(screen: (402, 874), panel: (364, 900))
-    let r = tall.rect(top: -10_000)
-    check(r.y == 0 && r.height == 874, "oversize rect clamps to screen")
 }
 
 // MARK: Panel border — every Edit Widget choice pins a known stroke; "none" / unknown → nil
@@ -568,6 +492,28 @@ do {
     let enc = try! JSONEncoder().encode(c)
     let dec = try? JSONDecoder().decode(PanelConfig.self, from: enc)
     check(dec?.bottomLayout == "agenda", "bottomLayout round-trips")
+}
+
+// MARK: Deadline (ticket 0011) — a stalled source must not hold the widget timeline hostage
+do {
+    let fast = await Deadline.run(seconds: 2, fallback: -1) { 7 }
+    check(fast == 7, "fast op returns its value, not the fallback")
+
+    var t0 = Date()
+    let slow = await Deadline.run(seconds: 0.3, fallback: -1) {
+        try? await Task.sleep(nanoseconds: 3_000_000_000); return 7
+    }
+    check(slow == -1, "slow op → fallback")
+    check(Date().timeIntervalSince(t0) < 1.5, "slow op: returns at the deadline, not after the op (\(Date().timeIntervalSince(t0)) s)")
+
+    // The real failure shape: a checked continuation nobody resumes (HealthKit / stalled network)
+    // ignores cancellation. A TaskGroup-based timeout would hang here forever.
+    t0 = Date()
+    let stuck: Int? = await Deadline.run(seconds: 0.3, fallback: nil) {
+        await withCheckedContinuation { (_: CheckedContinuation<Int?, Never>) in }
+    }
+    check(stuck == nil, "never-resuming op → fallback")
+    check(Date().timeIntervalSince(t0) < 1.5, "never-resuming op: returns at the deadline (\(Date().timeIntervalSince(t0)) s)")
 }
 
 print(failures == 0 ? "OK — all checks green" : "\(failures) FAILED")
