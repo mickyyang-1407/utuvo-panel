@@ -61,3 +61,10 @@
 
 - SPI 在 iOS 27.x 小版本更新後是否仍有效——沒有自動監測，只能每次新 iOS 手動查。
 - 真機上三種下半部版面只有 Micky 目視過 hourly；agenda（多筆行程）在真機未驗。
+
+## 7. 09-25 午後更新（1.0.2）
+
+- **1.0.2 (7) 已送審**（submission `26e67ee2`，MANUAL）：修「首次安裝小工具停在骨架」（ticket 0011）。送審稿 `docs/AppStore/1.0.2-metadata.md`。17PMX 已裝同版。
+- §4 第 3 項死碼清理＝ticket 0012 CLOSED；第 4 項測試＝test2 冪等、test3 斷言、中英 predicate；第 6 項 builds 夾＝1.0-4／1.0-5 移垃圾桶（1.0.1-6 等 1.0.2 上架後清）；第 2 項截圖＝`docs/AppStore/screenshots-1.0.2/{en-US,zh-Hant}/`（未上傳）；第 7 項 metadata 已隨 public 同步。
+- public main `44c642b`＝本分支 tree。
+- 仍卡 Micky：1.0.2 過審後發布；截圖品味（系統列 Mac 數字、繁中截圖英文城市名）；中國大陸 ICP。
